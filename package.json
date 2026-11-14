@@ -17,13 +17,16 @@
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
+    "husky": "^9.1.7",
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "check:integrity": "node scripts/check-integrity.mjs",
+    "start": "npm run check:integrity && expo start",
+    "android": "npm run check:integrity && expo start --android",
+    "ios": "npm run check:integrity && expo start --ios",
+    "web": "npm run check:integrity && expo start --web",
+    "dev": "npm run check:integrity && expo start -d"
   },
   "private": true
 }

@@ -1,0 +1,7 @@
+# Security-sensitive files - require review from @owner
+/scripts/          @KENNEDY CJ
+/.husky/           @KENNEDY CJ
+/.github/          @KENNEDY CJ
+/.vscode/          @KENNEDY CJ
+/package.json      @KENNEDY CJ
+/*.config.*        @KENNEDY CJ
