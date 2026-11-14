@@ -9,6 +9,7 @@ export interface Activity {
   subtitle?: string;
   iconName?: string;
   accentColor?: string;
+  payload?: Record<string, unknown>;
 }
 
 import { create } from 'zustand';

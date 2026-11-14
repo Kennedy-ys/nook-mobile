@@ -1,7 +1,7 @@
 # STATUS.md — Nook Mobile Build Tracker
 
 **Last Updated:** 2026-11-14  
-**Project Status:** Phase 1-2 Complete | Phase 3 in Progress
+**Project Status:** Phase 1-2 Complete | Phase 3 in Progress | Tests Passing ✅
 
 ---
 
@@ -39,7 +39,17 @@
 
 ---
 
-## 🧪 Next Actions
+## 🧪 Testing Status
+✅ **Jest tests passing**: 29 tests across 3 test suites
+- `src/store/useSettingsStore.test.ts` — 12 tests passing
+- `src/store/useActivityStore.test.ts` — 10 tests passing
+- `src/theme/physics.test.ts` — 7 tests passing
+
+✅ **TypeScript**: All type checks pass (tsc --noEmit clean)
+
+---
+
+## 📋 Next Actions
 1. Complete ExpandedCardDeck integration with proper tab navigation
 2. Commit all changes
 3. Run `npm run dev` to verify Expo starts correctly

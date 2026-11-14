@@ -27,8 +27,8 @@ export const TimerCard: React.FC<TimerCardProps> = ({ onClose }) => {
     return null;
   }
 
-  const timerRemaining = primaryActivity?.payload?.remaining || 0;
-  const stopwatchElapsed = primaryActivity?.payload?.elapsed || secondaryActivity?.payload?.elapsed || 0;
+  const timerRemaining = (primaryActivity?.payload?.remaining as number) || 0;
+  const stopwatchElapsed = (primaryActivity?.payload?.elapsed as number) || (secondaryActivity?.payload?.elapsed as number) || 0;
 
   return (
     <Animated.View

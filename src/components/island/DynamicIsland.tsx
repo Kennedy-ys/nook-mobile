@@ -3,7 +3,6 @@ import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-nati
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  useAnimatedGestureHandler,
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
@@ -55,11 +54,7 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = () => {
 
   return (
     <PanGestureHandler
-      onGestureEvent={useAnimatedGestureHandler({
-        onStart: () => {},
-        onActive: () => {},
-        onEnd: () => {},
-      })}
+      onGestureEvent={() => {}}
     >
       <Animated.View
         style={[

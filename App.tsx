@@ -40,6 +40,8 @@ export default function App() {
 }
 
 function SandboxControls() {
+  const visibilityMode = useSettingsStore((s) => s.visibilityMode);
+
   const addMusic = () => {
     useActivityStore.getState().addActivity({
       id: 'demo-music',
@@ -47,6 +49,7 @@ function SandboxControls() {
       title: 'Demo Track',
       subtitle: 'Demo Artist',
       accentColor: '#30D158',
+      payload: { albumArt: 'https://picsum.photos/200' },
     });
   };
 

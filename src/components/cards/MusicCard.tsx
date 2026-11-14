@@ -7,6 +7,7 @@ import Animated, {
   withRepeat,
   withDelay,
   Easing,
+  SharedValue,
 } from 'react-native-reanimated';
 import { useActivityStore } from '../../store/useActivityStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
@@ -44,7 +45,7 @@ export const MusicCard: React.FC<MusicCardProps> = ({ onClose }) => {
   }
 
   const accentColor = primaryActivity.accentColor || '#0A84FF';
-  const albumArt = primaryActivity.payload?.albumArt || 'https://picsum.photos/200';
+  const albumArt = (primaryActivity.payload?.albumArt as string) || 'https://picsum.photos/200';
 
   return (
     <Animated.View
@@ -89,7 +90,7 @@ export const MusicCard: React.FC<MusicCardProps> = ({ onClose }) => {
   );
 };
 
-function EqualizerBars({ heights, accentColor }: { heights: Animated.SharedValue<number[]>; accentColor: string }) {
+function EqualizerBars({ heights, accentColor }: { heights: SharedValue<number[]>; accentColor: string }) {
   return (
     <View style={styles.equalizerContainer}>
       {Array.from({ length: 5 }).map((_, i) => (

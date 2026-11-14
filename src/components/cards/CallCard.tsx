@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Animated as RNAnimated } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,6 +7,7 @@ import Animated, {
   withSequence,
   withRepeat,
   Easing,
+  SharedValue,
 } from 'react-native-reanimated';
 import { useActivityStore } from '../../store/useActivityStore';
 
@@ -90,7 +91,7 @@ export const CallCard: React.FC<CallCardProps> = ({ onClose }) => {
   );
 };
 
-function VoiceWaveform({ amplitude, color }: { amplitude: Animated.SharedValue<number>; color: string }) {
+function VoiceWaveform({ amplitude, color }: { amplitude: SharedValue<number>; color: string }) {
   const barCount = 8;
   return (
     <View style={styles.waveform}>

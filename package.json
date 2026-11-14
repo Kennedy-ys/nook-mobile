@@ -1,10 +1,10 @@
 {
   "name": "nook-mobile",
   "version": "0.1.0",
-  "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@types/uuid": "^10.0.0",
     "expo": "~58.0.25",
     "expo-blur": "~58.0.6",
     "expo-haptics": "~58.0.8",
@@ -14,11 +14,21 @@
     "react-native-gesture-handler": "~3.3.0",
     "react-native-mmkv": "^4.3.2",
     "react-native-reanimated": "4.7.1",
+    "uuid": "^14.0.3",
     "zustand": "^5.1.0"
   },
   "devDependencies": {
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.3.0",
+    "babel-jest": "^30.5.2",
+    "babel-preset-expo": "^58.0.25",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
     "husky": "^9.1.7",
+    "jest": "^30.5.2",
+    "ts-jest": "^29.4.15",
     "typescript": "~6.0.3"
   },
   "scripts": {
