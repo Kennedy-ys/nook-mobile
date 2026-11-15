@@ -7,6 +7,8 @@ export const MockEventSimulator = {
   isRunning: false as boolean,
   musicInterval: null as ReturnType<typeof setInterval> | null,
   timerInterval: null as ReturnType<typeof setInterval> | null,
+  callInterval: null as ReturnType<typeof setInterval> | null,
+  downloadInterval: null as ReturnType<typeof setInterval> | null,
 
   startMusicSimulation() {
     const tracks = [
@@ -59,7 +61,7 @@ export const MockEventSimulator = {
       type: 'timer',
       title: 'Countdown Timer',
       accentColor: '#FF3B30',
-      payload: { remaining: duration, active: true, startTime },
+      payload: { remaining: duration, duration, active: false, startTime, stopwatchActive: false, elapsed: 0 },
     });
   },
 
@@ -92,10 +94,51 @@ export const MockEventSimulator = {
       accentColor: '#AF52DE',
       payload: { progress: 0, completed: false },
     });
+
+    // Simulate download progress
+    this.downloadInterval = setInterval(() => {
+      const activities = useActivityStore.getState().activeActivities;
+      const downloadActivity = activities.find(a => a.type === 'download');
+      if (downloadActivity && downloadActivity.payload) {
+        const progress = Math.min(100, (downloadActivity.payload.progress as number) + 10);
+        useActivityStore.getState().addActivity({
+          ...downloadActivity,
+          payload: { ...downloadActivity.payload, progress },
+        });
+        if (progress >= 100) {
+          if (this.downloadInterval) {
+            clearInterval(this.downloadInterval);
+            this.downloadInterval = null;
+          }
+          useActivityStore.getState().showTransient('Download complete!');
+        }
+      }
+    }, 500);
+  },
+
+  stopDownloadSimulation() {
+    if (this.downloadInterval) {
+      clearInterval(this.downloadInterval);
+      this.downloadInterval = null;
+    }
+  },
+
+  // System event simulations for transient HUD
+  simulateVolumeChange(volume: number) {
+    useActivityStore.getState().showTransient(`Volume: ${volume}%`);
+  },
+
+  simulateBrightnessChange(brightness: number) {
+    useActivityStore.getState().showTransient(`Brightness: ${brightness}%`);
+  },
+
+  simulateNetworkChange() {
+    useActivityStore.getState().showTransient('Connected to Wi-Fi');
   },
 
   stopAll() {
     this.stopMusicSimulation();
+    this.stopDownloadSimulation();
     useActivityStore.getState().clearActivities();
   },
 };

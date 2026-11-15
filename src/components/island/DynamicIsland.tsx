@@ -1,13 +1,12 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  runOnJS,
 } from 'react-native-reanimated';
 import { PanGestureHandler } from 'react-native-gesture-handler';
-import { useActivityStore, IslandState } from '../../store/useActivityStore';
+import { useActivityStore } from '../../store/useActivityStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { useSpringPhysics } from '../../hooks/useSpringPhysics';
 
@@ -19,6 +18,7 @@ const SPLIT_BUBBLE_SIZE = 32;
 interface DynamicIslandProps {}
 
 export const DynamicIsland: React.FC<DynamicIslandProps> = () => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   const currentState = useActivityStore((s) => s.currentState);
   const primaryActivity = useActivityStore((s) => s.primaryActivity);
   const secondaryActivity = useActivityStore((s) => s.secondaryActivity);
@@ -45,12 +45,14 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = () => {
     if (currentState === 'expanded') targetHeight = EXPANDED_HEIGHT;
     if (currentState === 'split') targetHeight = COMPACT_HEIGHT;
 
+    // height is a SharedValue - mutating .value is the correct Reanimated pattern
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/immutability
     height.value = withSpring(targetHeight, {
       damping: physics.damping,
       stiffness: physics.stiffness,
       mass: physics.mass,
     });
-  }, [currentState, height, physics]);
+  }, [currentState, physics]);
 
   return (
     <PanGestureHandler
