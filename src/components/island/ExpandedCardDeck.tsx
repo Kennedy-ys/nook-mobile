@@ -4,6 +4,9 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useActivityStore } from '../../store/useActivityStore';
+import { MusicCard } from '../cards/MusicCard';
+import { CallCard } from '../cards/CallCard';
+import { TimerCard } from '../cards/TimerCard';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;

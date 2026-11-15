@@ -28,18 +28,6 @@ const ACTIVITY_PRIORITY: Record<ActivityType, number> = {
 const compareByPriority = (a: Activity, b: Activity) =>
   ACTIVITY_PRIORITY[a.type] - ACTIVITY_PRIORITY[b.type];
 
-/** Priority ordering for activity display — higher priority appears first in split bubbles. */
-const ACTIVITY_PRIORITY: Record<ActivityType, number> = {
-  call: 1,
-  timer: 2,
-  music: 3,
-  download: 4,
-  weather: 5,
-};
-
-const compareByPriority = (a: Activity, b: Activity) =>
-  ACTIVITY_PRIORITY[a.type] - ACTIVITY_PRIORITY[b.type];
-
 interface ActivityStoreState {
   currentState: IslandState;
   activeActivities: Activity[];
