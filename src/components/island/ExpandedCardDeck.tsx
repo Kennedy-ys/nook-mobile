@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Animated as RNAnimated } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,6 +7,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useActivityStore } from '../../store/useActivityStore';
 import { useSpringPhysics } from '../../hooks/useSpringPhysics';
+import { MusicCard } from '../cards/MusicCard';
+import { CallCard } from '../cards/CallCard';
+import { TimerCard } from '../cards/TimerCard';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
@@ -27,13 +30,18 @@ export const ExpandedCardDeck: React.FC<ExpandedCardDeckProps> = ({ onClose }) =
 
     switch (primaryActivity.type) {
       case 'music':
-        return <Text>music card placeholder</Text>;
+        return <MusicCard />;
       case 'call':
-        return <Text>call card placeholder</Text>;
+        return <CallCard />;
       case 'timer':
-        return <Text>timer card placeholder</Text>;
+        return <TimerCard />;
       default:
-        return <Text>card content</Text>;
+        return (
+          <View style={styles.defaultCard}>
+            <Text style={styles.defaultTitle}>{primaryActivity.title}</Text>
+            <Text style={styles.defaultSubtitle}>No expanded view yet</Text>
+          </View>
+        );
     }
   };
 
@@ -48,7 +56,13 @@ export const ExpandedCardDeck: React.FC<ExpandedCardDeckProps> = ({ onClose }) =
     >
       <View style={styles.tabs}>
         {tabs.map((tab, index) => (
-          <TouchableOpacity key={tab} style={styles.tab}>
+          <TouchableOpacity
+            key={tab}
+            style={styles.tab}
+            onPress={() => {
+              activeTab.value = index;
+            }}
+          >
             <Text style={[styles.tabText, activeTab.value === index && styles.activeTab]}>
               {tab}
             </Text>
@@ -56,9 +70,7 @@ export const ExpandedCardDeck: React.FC<ExpandedCardDeckProps> = ({ onClose }) =
         ))}
       </View>
 
-      <View style={styles.cardContent}>
-        {renderCard()}
-      </View>
+      <View style={styles.cardContent}>{renderCard()}</View>
 
       {onClose && (
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -112,6 +124,21 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  defaultCard: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  defaultTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  defaultSubtitle: {
+    fontSize: 13,
+    color: '#888',
   },
   closeButton: {
     position: 'absolute',

@@ -67,8 +67,20 @@ function SandboxControls() {
     });
   };
 
+  const addDownload = () => {
+    MockEventSimulator.startDownloadSimulation();
+  };
+
   const clearAll = () => {
     useActivityStore.getState().clearActivities();
+  };
+
+  const expand = () => {
+    useActivityStore.getState().setIslandState('expanded');
+  };
+
+  const showTransient = () => {
+    useActivityStore.getState().showTransient('Volume: 50%');
   };
 
   const setVisibilityMode = (mode: 'Smart' | 'Fixed' | 'Hidden') => {
@@ -83,6 +95,15 @@ function SandboxControls() {
         <SandboxButton label="Music" onPress={addMusic} color="#30D158" />
         <SandboxButton label="Call" onPress={addCall} color="#0A84FF" />
         <SandboxButton label="Timer" onPress={addTimer} color="#FF3B30" />
+        <SandboxButton label="Download" onPress={addDownload} color="#AF52DE" />
+      </View>
+
+      <View style={styles.divider} />
+
+      <Text style={styles.subtitle}>Island Actions</Text>
+      <View style={styles.buttonRow}>
+        <SandboxButton label="Expand" onPress={expand} color="#0A84FF" />
+        <SandboxButton label="HUD Toast" onPress={showTransient} color="#AF52DE" />
       </View>
 
       <View style={styles.divider} />
