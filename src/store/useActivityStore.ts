@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { triggerHapticForStateChange, triggerHapticForActivity } from '../utils/haptics';
 
 export type IslandState = 'idle' | 'compact' | 'split' | 'expanded' | 'transient';
@@ -154,37 +155,7 @@ export const useActivityStore = create<ActivityStoreState>()(
     }),
     {
       name: 'nook-activity',
-      storage: createJSONStorage(() => {
-        return {
-          getItem: (name: string) => {
-            try {
-              // eslint-disable-next-line @typescript-eslint/no-require-imports
-              const storage = require('react-native-mmkv').MMKV;
-              return storage.getString(name) || null;
-            } catch {
-              return null;
-            }
-          },
-          setItem: (name: string, value: string) => {
-            try {
-              // eslint-disable-next-line @typescript-eslint/no-require-imports
-              const storage = require('react-native-mmkv').MMKV;
-              storage.set(name, value);
-            } catch {
-              // Ignore in test environment
-            }
-          },
-          removeItem: (name: string) => {
-            try {
-              // eslint-disable-next-line @typescript-eslint/no-require-imports
-              const storage = require('react-native-mmkv').MMKV;
-              storage.delete(name);
-            } catch {
-              // Ignore
-            }
-          },
-        };
-      }),
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         activeActivities: state.activeActivities,
         primaryActivity: state.primaryActivity,

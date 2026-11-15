@@ -10,6 +10,7 @@ module.exports = {
     '^expo-blur$': '<rootDir>/__mocks__/expo-blur.js',
     '^expo-haptics$': '<rootDir>/__mocks__/expo-haptics.js',
     '^react-native-mmkv$': '<rootDir>/__mocks__/react-native-mmkv.js',
+    '^@react-native-async-storage/async-storage$': '<rootDir>/__mocks__/@react-native-async-storage/async-storage.js',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
