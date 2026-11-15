@@ -60,7 +60,9 @@ describe('useActivityStore', () => {
       });
 
       expect(useActivityStore.getState().currentState).toBe('split');
-      expect(useActivityStore.getState().secondaryActivity).not.toBeNull();
+      // Call has higher priority, so it's primary
+      expect(useActivityStore.getState().primaryActivity?.title).toBe('Call 1');
+      expect(useActivityStore.getState().secondaryActivity?.title).toBe('Song 1');
     });
 
     it('replaces an existing activity of the same type', () => {

@@ -2,14 +2,8 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
-  useAnimatedStyle,
-  withSpring,
 } from 'react-native-reanimated';
 import { useActivityStore } from '../../store/useActivityStore';
-import { useSpringPhysics } from '../../hooks/useSpringPhysics';
-import { MusicCard } from '../cards/MusicCard';
-import { CallCard } from '../cards/CallCard';
-import { TimerCard } from '../cards/TimerCard';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
@@ -20,7 +14,6 @@ interface ExpandedCardDeckProps {
 
 export const ExpandedCardDeck: React.FC<ExpandedCardDeckProps> = ({ onClose }) => {
   const primaryActivity = useActivityStore((s) => s.primaryActivity);
-  const physics = useSpringPhysics();
 
   const activeTab = useSharedValue(0);
   const tabs = ['Today', 'Music', 'Call', 'Timer', 'Download'];

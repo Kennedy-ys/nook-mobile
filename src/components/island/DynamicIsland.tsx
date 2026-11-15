@@ -1,13 +1,12 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  runOnJS,
 } from 'react-native-reanimated';
 import { PanGestureHandler } from 'react-native-gesture-handler';
-import { useActivityStore, IslandState } from '../../store/useActivityStore';
+import { useActivityStore } from '../../store/useActivityStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { useSpringPhysics } from '../../hooks/useSpringPhysics';
 import { ExpandedCardDeck } from './ExpandedCardDeck';
@@ -18,9 +17,7 @@ const COMPACT_HEIGHT = 48;
 const EXPANDED_HEIGHT = 140;
 const SPLIT_BUBBLE_SIZE = 32;
 
-interface DynamicIslandProps {}
-
-export const DynamicIsland: React.FC<DynamicIslandProps> = () => {
+export const DynamicIsland: React.FC = () => {
   const currentState = useActivityStore((s) => s.currentState);
   const setIslandState = useActivityStore((s) => s.setIslandState);
   const primaryActivity = useActivityStore((s) => s.primaryActivity);
@@ -48,12 +45,13 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = () => {
     if (currentState === 'expanded') targetHeight = EXPANDED_HEIGHT;
     if (currentState === 'split') targetHeight = COMPACT_HEIGHT;
 
+    // eslint-disable-next-line react-hooks/immutability
     height.value = withSpring(targetHeight, {
       damping: physics.damping,
       stiffness: physics.stiffness,
       mass: physics.mass,
     });
-  }, [currentState, height, physics]);
+  }, [currentState, physics]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View style={styles.islandWrapper}>
