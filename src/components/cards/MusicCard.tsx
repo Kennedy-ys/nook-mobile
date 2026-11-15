@@ -2,11 +2,9 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Image } from 'react-native';
 import Animated, {
   useSharedValue,
-  useAnimatedStyle,
   withTiming,
   withRepeat,
   withDelay,
-  Easing,
   SharedValue,
 } from 'react-native-reanimated';
 import { useActivityStore } from '../../store/useActivityStore';

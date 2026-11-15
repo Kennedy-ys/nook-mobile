@@ -1,6 +1,7 @@
 import { useActivityStore } from '../store/useActivityStore';
 import { v4 as uuidv4 } from 'uuid';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 export const MockEventSimulator = {

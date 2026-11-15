@@ -15,10 +15,7 @@ const COMPACT_HEIGHT = 48;
 const EXPANDED_HEIGHT = 140;
 const SPLIT_BUBBLE_SIZE = 32;
 
-interface DynamicIslandProps {}
-
-export const DynamicIsland: React.FC<DynamicIslandProps> = () => {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export const DynamicIsland: React.FC = () => {
   const currentState = useActivityStore((s) => s.currentState);
   const primaryActivity = useActivityStore((s) => s.primaryActivity);
   const secondaryActivity = useActivityStore((s) => s.secondaryActivity);
@@ -45,14 +42,13 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = () => {
     if (currentState === 'expanded') targetHeight = EXPANDED_HEIGHT;
     if (currentState === 'split') targetHeight = COMPACT_HEIGHT;
 
-    // height is a SharedValue - mutating .value is the correct Reanimated pattern
-    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/immutability
+    // eslint-disable-next-line react-hooks/immutability
     height.value = withSpring(targetHeight, {
       damping: physics.damping,
       stiffness: physics.stiffness,
       mass: physics.mass,
     });
-  }, [currentState, physics]);
+  }, [currentState, physics]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <PanGestureHandler

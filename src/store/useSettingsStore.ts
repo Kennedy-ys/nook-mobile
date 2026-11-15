@@ -38,6 +38,7 @@ export const useSettingsStore = create<SettingsState>()(
         return {
           getItem: (name: string) => {
             try {
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
               const storage = require('react-native-mmkv').MMKV;
               return storage.getString(name) || null;
             } catch {
@@ -46,6 +47,7 @@ export const useSettingsStore = create<SettingsState>()(
           },
           setItem: (name: string, value: string) => {
             try {
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
               const storage = require('react-native-mmkv').MMKV;
               storage.set(name, value);
             } catch {
@@ -54,6 +56,7 @@ export const useSettingsStore = create<SettingsState>()(
           },
           removeItem: (name: string) => {
             try {
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
               const storage = require('react-native-mmkv').MMKV;
               storage.delete(name);
             } catch {

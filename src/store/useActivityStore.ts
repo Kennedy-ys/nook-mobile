@@ -1,3 +1,7 @@
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { triggerHapticForStateChange, triggerHapticForActivity } from '../utils/haptics';
+
 export type IslandState = 'idle' | 'compact' | 'split' | 'expanded' | 'transient';
 
 export type ActivityType = 'music' | 'call' | 'timer' | 'download' | 'weather';
@@ -11,10 +15,6 @@ export interface Activity {
   accentColor?: string;
   payload?: Record<string, unknown>;
 }
-
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { triggerHapticForStateChange, triggerHapticForActivity } from '../utils/haptics';
 
 /** Priority ordering for activity display — higher priority appears first in split bubbles. */
 const ACTIVITY_PRIORITY: Record<ActivityType, number> = {
@@ -158,6 +158,7 @@ export const useActivityStore = create<ActivityStoreState>()(
         return {
           getItem: (name: string) => {
             try {
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
               const storage = require('react-native-mmkv').MMKV;
               return storage.getString(name) || null;
             } catch {
@@ -166,6 +167,7 @@ export const useActivityStore = create<ActivityStoreState>()(
           },
           setItem: (name: string, value: string) => {
             try {
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
               const storage = require('react-native-mmkv').MMKV;
               storage.set(name, value);
             } catch {
@@ -174,6 +176,7 @@ export const useActivityStore = create<ActivityStoreState>()(
           },
           removeItem: (name: string) => {
             try {
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
               const storage = require('react-native-mmkv').MMKV;
               storage.delete(name);
             } catch {
