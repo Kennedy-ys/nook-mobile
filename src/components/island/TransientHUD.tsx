@@ -50,12 +50,12 @@ export const TransientHUD: React.FC<TransientHUDProps> = ({ onDismiss }) => {
     }
   }, [transientMessage, opacity, translateY, physics]);
 
-  if (!transientMessage) return null;
-
   const hudStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
   }));
+
+  if (!transientMessage) return null;
 
   return (
     <Animated.View style={[styles.container, hudStyle]}>
