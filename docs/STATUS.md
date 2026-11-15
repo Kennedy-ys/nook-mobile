@@ -36,6 +36,7 @@
 - `src/store/useActivityStore.ts` — Activity queue & FSM state with MMKV persistence
 - `src/services/MockEventSimulator.ts` — Demo event generator with download progress, system events
 - `src/app/settings.tsx` — Settings screen with live preview
+- `src/utils/haptics.ts` — Haptics integration using expo-haptics
 - `.husky/pre-commit` — Auto-run integrity check
 - `.github/CODEOWNERS` — Security file ownership
 
@@ -49,12 +50,13 @@
 
 ✅ **TypeScript**: All type checks pass (tsc --noEmit clean)
 
-✅ **Lint**: No errors (19 warnings only - unused imports, style preferences)
+✅ **Lint**: No errors (20 warnings only - unused imports, style preferences)
 
 ---
 
 ## 📋 Next Actions (Phase 5)
-1. Implement haptics integration (P4-04) using expo-haptics
-2. Run `npm run dev` to verify Expo starts correctly
-3. Final visual polish and Expo verification
-4. Create Phase 4 PR
+1. Run `npm run dev` to verify Expo starts correctly
+2. Final visual polish and Expo verification
+3. Accessibility pass (screen readers, contrast, reduced motion)
+4. Battery & CPU profiling using Expo Dev Tools
+5. Beta testing with real devices
