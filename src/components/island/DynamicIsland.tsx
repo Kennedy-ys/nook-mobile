@@ -9,6 +9,8 @@ import { PanGestureHandler } from 'react-native-gesture-handler';
 import { useActivityStore } from '../../store/useActivityStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { useSpringPhysics } from '../../hooks/useSpringPhysics';
+import { ExpandedCardDeck } from './ExpandedCardDeck';
+import { TransientHUD } from './TransientHUD';
 
 const { width } = Dimensions.get('window');
 const COMPACT_HEIGHT = 48;
@@ -17,6 +19,7 @@ const SPLIT_BUBBLE_SIZE = 32;
 
 export const DynamicIsland: React.FC = () => {
   const currentState = useActivityStore((s) => s.currentState);
+  const setIslandState = useActivityStore((s) => s.setIslandState);
   const primaryActivity = useActivityStore((s) => s.primaryActivity);
   const secondaryActivity = useActivityStore((s) => s.secondaryActivity);
   const notchOffset = useSettingsStore((s) => s.notchOffset);
@@ -51,32 +54,36 @@ export const DynamicIsland: React.FC = () => {
   }, [currentState, physics]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <PanGestureHandler
-      onGestureEvent={() => {}}
-    >
-      <Animated.View
-        style={[
-          styles.container,
-          islandStyle,
-          { top: notchOffset, left: width / 2, transform: [{ translateX: -width / 2 }] },
-        ]}
+    <View style={styles.islandWrapper}>
+      <PanGestureHandler
+        onGestureEvent={() => {}}
       >
-        <View style={styles.pillContent}>
-          {currentState === 'compact' && primaryActivity && (
-            <CompactPillActivity activity={primaryActivity} />
-          )}
-          {currentState === 'split' && primaryActivity && (
-            <SplitBubbleActivity
-              primary={primaryActivity}
-              secondary={secondaryActivity}
-            />
-          )}
-          {currentState === 'expanded' && (
-            <ExpandedCardActivity activity={primaryActivity} />
-          )}
-        </View>
-      </Animated.View>
-    </PanGestureHandler>
+        <Animated.View
+          style={[
+            styles.container,
+            islandStyle,
+            { top: notchOffset, left: width / 2, transform: [{ translateX: -width / 2 }] },
+          ]}
+        >
+          <View style={styles.pillContent}>
+            {currentState === 'compact' && primaryActivity && (
+              <CompactPillActivity activity={primaryActivity} />
+            )}
+            {currentState === 'split' && primaryActivity && (
+              <SplitBubbleActivity
+                primary={primaryActivity}
+                secondary={secondaryActivity}
+              />
+            )}
+            {currentState === 'expanded' && (
+              <ExpandedCardDeck onClose={() => setIslandState('compact')} />
+            )}
+          </View>
+        </Animated.View>
+      </PanGestureHandler>
+
+      <TransientHUD />
+    </View>
   );
 };
 
@@ -115,17 +122,12 @@ function SplitBubbleActivity({
   );
 }
 
-function ExpandedCardActivity({ activity }: { activity: { title: string } | null }) {
-  if (!activity) return null;
-
-  return (
-    <View style={styles.expandedCard}>
-      <Text style={styles.expandedTitle}>{activity.title}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
+  islandWrapper: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   container: {
     position: 'absolute',
     width: '100%',
@@ -172,19 +174,6 @@ const styles = StyleSheet.create({
   },
   bubbleText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  expandedCard: {
-    flex: 1,
-    width: '100%',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  expandedTitle: {
-    fontSize: 18,
     fontWeight: '600',
     color: '#ffffff',
   },
