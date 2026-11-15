@@ -14,15 +14,31 @@ export interface Activity {
 
 import { create } from 'zustand';
 
+/** Priority ordering for activity display — higher priority appears first in split bubbles. */
+const ACTIVITY_PRIORITY: Record<ActivityType, number> = {
+  call: 1,
+  timer: 2,
+  music: 3,
+  download: 4,
+  weather: 5,
+};
+
+const compareByPriority = (a: Activity, b: Activity) =>
+  ACTIVITY_PRIORITY[a.type] - ACTIVITY_PRIORITY[b.type];
+
 interface ActivityStoreState {
   currentState: IslandState;
   activeActivities: Activity[];
   primaryActivity: Activity | null;
   secondaryActivity: Activity | null;
+  transientMessage: string | null;
   setIslandState: (state: IslandState) => void;
   addActivity: (activity: Activity) => void;
   removeActivity: (id: string) => void;
   clearActivities: () => void;
+  showTransient: (message: string) => void;
+  hideTransient: () => void;
+  reorderActivities: (ids: string[]) => void;
 }
 
 export const useActivityStore = create<ActivityStoreState>((set, get) => ({
@@ -44,11 +60,25 @@ export const useActivityStore = create<ActivityStoreState>((set, get) => ({
     accentColor: '#30D158',
   },
   secondaryActivity: null,
+  transientMessage: null,
   setIslandState: (currentState) => set({ currentState }),
   addActivity: (activity) => {
     const current = get().activeActivities;
     const exists = current.some((a) => a.id === activity.id);
-    const updated = exists ? current : [...current, activity];
+
+    // Replace an existing activity of the same type (e.g. new song, new call)
+    // so the island never shows two activities of the same kind side by side.
+    const sameTypeIndex = current.findIndex((a) => a.type === activity.type);
+    let updated: Activity[];
+    if (sameTypeIndex >= 0 && !exists) {
+      updated = current.map((a, i) => (i === sameTypeIndex ? activity : a));
+    } else if (exists) {
+      updated = current.map((a) => (a.id === activity.id ? activity : a));
+    } else {
+      updated = [...current, activity];
+    }
+
+    updated.sort(compareByPriority);
 
     let state: IslandState = 'compact';
     if (updated.length === 0) state = 'idle';
@@ -81,4 +111,19 @@ export const useActivityStore = create<ActivityStoreState>((set, get) => ({
       secondaryActivity: null,
       currentState: 'idle',
     }),
+  showTransient: (message) =>
+    set({ transientMessage: message, currentState: 'transient' }),
+  hideTransient: () =>
+    set({ transientMessage: null, currentState: 'compact' }),
+  reorderActivities: (ids) => {
+    const current = get().activeActivities;
+    const ordered = ids
+      .map((id) => current.find((a) => a.id === id))
+      .filter((a): a is Activity => a !== undefined);
+    set({
+      activeActivities: ordered,
+      primaryActivity: ordered[0] || null,
+      secondaryActivity: ordered[1] || null,
+    });
+  },
 }));

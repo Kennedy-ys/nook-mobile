@@ -6,6 +6,7 @@ beforeEach(() => {
     activeActivities: [],
     primaryActivity: null,
     secondaryActivity: null,
+    transientMessage: null,
   });
 });
 
@@ -59,7 +60,41 @@ describe('useActivityStore', () => {
       });
 
       expect(useActivityStore.getState().currentState).toBe('split');
-      expect(useActivityStore.getState().secondaryActivity?.title).toBe('Call 1');
+      expect(useActivityStore.getState().secondaryActivity).not.toBeNull();
+    });
+
+    it('replaces an existing activity of the same type', () => {
+      useActivityStore.getState().addActivity({
+        id: 'test-1',
+        type: 'music',
+        title: 'Song 1',
+      });
+
+      useActivityStore.getState().addActivity({
+        id: 'test-2',
+        type: 'music',
+        title: 'Song 2',
+      });
+
+      expect(useActivityStore.getState().activeActivities).toHaveLength(1);
+      expect(useActivityStore.getState().primaryActivity?.title).toBe('Song 2');
+    });
+
+    it('sorts activities by priority (call before music)', () => {
+      useActivityStore.getState().addActivity({
+        id: 'test-1',
+        type: 'music',
+        title: 'Song 1',
+      });
+
+      useActivityStore.getState().addActivity({
+        id: 'test-2',
+        type: 'call',
+        title: 'Call 1',
+      });
+
+      expect(useActivityStore.getState().primaryActivity?.title).toBe('Call 1');
+      expect(useActivityStore.getState().secondaryActivity?.title).toBe('Song 1');
     });
   });
 
@@ -82,6 +117,18 @@ describe('useActivityStore', () => {
       expect(useActivityStore.getState().activeActivities).toHaveLength(1);
       expect(useActivityStore.getState().primaryActivity?.title).toBe('Call 1');
     });
+
+    it('sets state to idle when last activity is removed', () => {
+      useActivityStore.getState().addActivity({
+        id: 'test-1',
+        type: 'music',
+        title: 'Song 1',
+      });
+
+      useActivityStore.getState().removeActivity('test-1');
+
+      expect(useActivityStore.getState().currentState).toBe('idle');
+    });
   });
 
   describe('clearActivities', () => {
@@ -98,6 +145,57 @@ describe('useActivityStore', () => {
       expect(useActivityStore.getState().primaryActivity).toBeNull();
       expect(useActivityStore.getState().secondaryActivity).toBeNull();
       expect(useActivityStore.getState().currentState).toBe('idle');
+    });
+  });
+
+  describe('transient messages', () => {
+    it('shows a transient message and sets state to transient', () => {
+      useActivityStore.getState().showTransient('Volume: 50%');
+
+      expect(useActivityStore.getState().transientMessage).toBe('Volume: 50%');
+      expect(useActivityStore.getState().currentState).toBe('transient');
+    });
+
+    it('hides the transient message and returns to compact', () => {
+      useActivityStore.getState().showTransient('Volume: 50%');
+      useActivityStore.getState().hideTransient();
+
+      expect(useActivityStore.getState().transientMessage).toBeNull();
+      expect(useActivityStore.getState().currentState).toBe('compact');
+    });
+  });
+
+  describe('reorderActivities', () => {
+    it('reorders activities by the given id list', () => {
+      useActivityStore.getState().addActivity({
+        id: 'test-1',
+        type: 'music',
+        title: 'Song 1',
+      });
+
+      useActivityStore.getState().addActivity({
+        id: 'test-2',
+        type: 'call',
+        title: 'Call 1',
+      });
+
+      useActivityStore.getState().reorderActivities(['test-1', 'test-2']);
+
+      expect(useActivityStore.getState().primaryActivity?.title).toBe('Song 1');
+      expect(useActivityStore.getState().secondaryActivity?.title).toBe('Call 1');
+    });
+
+    it('drops unknown ids from the reorder', () => {
+      useActivityStore.getState().addActivity({
+        id: 'test-1',
+        type: 'music',
+        title: 'Song 1',
+      });
+
+      useActivityStore.getState().reorderActivities(['unknown', 'test-1']);
+
+      expect(useActivityStore.getState().activeActivities).toHaveLength(1);
+      expect(useActivityStore.getState().primaryActivity?.title).toBe('Song 1');
     });
   });
 });
