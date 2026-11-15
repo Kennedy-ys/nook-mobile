@@ -1,7 +1,7 @@
 # STATUS.md — Nook Mobile Build Tracker
 
 **Last Updated:** 2026-11-15  
-**Project Status:** Phase 1-4 Complete | Phase 5 in Progress | Tests Passing ✅
+**Project Status:** Phase 1-4 Complete | Phase 5 (Expo Verification) ✅ | Tests Passing ✅
 
 ---
 
@@ -10,7 +10,7 @@
 - [x] **Phase 2: Music, Call & Timer Cards** — Complete
 - [x] **Phase 3: ExpandedCardDeck & Expanded Island Integration** — Complete
 - [x] **Phase 4: MockEventSimulator & Sandbox Controls Refinement** — Complete
-- [ ] **Phase 5: Polish, Testing & Expo Run**
+- [x] **Phase 5: Polish, Testing & Expo Run** — Expo web verified running
 
 ---
 
@@ -52,11 +52,11 @@
 
 ✅ **Lint**: No errors (20 warnings only - unused imports, style preferences)
 
+✅ **Expo Web**: Running on http://localhost:8081
+
 ---
 
-## 📋 Next Actions (Phase 5)
-1. Run `npm run dev` to verify Expo starts correctly
-2. Final visual polish and Expo verification
-3. Accessibility pass (screen readers, contrast, reduced motion)
-4. Battery & CPU profiling using Expo Dev Tools
-5. Beta testing with real devices
+## 📋 Next Actions (Phase 5 Continued)
+1. Accessibility pass (screen readers, contrast, reduced motion)
+2. Battery & CPU profiling using Expo Dev Tools
+3. Beta testing with real devices (EAS development build)
