@@ -1,3 +1,24 @@
+# AGENTS.md
+
+The entry point for every coding agent and every new developer working on nook-mobile.
+
+## What nook-mobile is
+
+Nook Mobile is a persistent top-screen “Dynamic Island” widget for mobile devices. It morphs smoothly between compact status pills and expanded control cards for music, calls, timers, downloads, and system events.
+
+## Read these first, every session
+
+You must read these files in this order at the start of every session, before you change anything:
+
+1. `AGENTS.md`: this file.
+2. [`docs/01-PRD.md`](docs/01-PRD.md): The core vision of the project and its requirements.
+3. [`docs/02-App-Flow.md`](docs/02-App-Flow.md): The user experience (UX) architecture and flow of the app.
+4. [`docs/03-Tech-Stack.md`](docs/03-Tech-Stack.md): The technology blueprint for the project, including directory structure, dependencies, and coding standards.
+5. [`docs/04-Frontend-Guidelines.md`](docs/04-Frontend-Guidelines.md): UI/UX consistency and code quality rules for the client-side 
+6. [`docs/05-Backend-Schema.md`](docs/05-Backend-Schema.md): The database and server-side architecture.
+7. [`docs/06-Implementation-Plan.md`](docs/06-Implementation-Plan.md): The project road map and implementation plan.
+8. [`docs/STATUS.md`](docs/STATUS.md): The current status of the project, including what is done, in progress, and planned.
+
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
 ## Expo has changed — do not trust your training data

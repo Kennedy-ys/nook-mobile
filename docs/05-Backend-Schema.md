@@ -5,89 +5,72 @@ This document defines the backend architecture, local storage schema, and event 
 
 ---
 
-## 2. Data Storage (Local-First Architecture)
+## 2. Data Storage (Current Local-First Architecture)
 
-We will use `react-native-mmkv` for synchronous local persistence and `Expo SecureStore` for sensitive user preferences (notifications permission tokens).
+The live app persists state with Zustand + `@react-native-async-storage/async-storage`. No secure token store is currently active in this repo; that remains a future enhancement.
 
-### 2.1 Settings Schema (`settings.json` stored in MMKV)
+### 2.1 Settings Schema (current Zustand store)
 ```ts
 interface Settings {
   visibilityMode: 'Smart' | 'Fixed' | 'Hidden';
   motionPreset: 'Smooth' | 'Lively' | 'Bouncy';
   translucency: number;    // 0 - 100
-  activeModules: {
-    music: boolean;
-    calls: boolean;
-    timer: boolean;
-    downloads: boolean;
-    weather: boolean;
-  };
-  notchOffset: number;     // px offset from top
+  notchOffset: number;    // px offset from top
   hapticsEnabled: boolean;
-  reducedMotionRespect: boolean;
 }
 ```
+
+This is implemented by `useSettingsStore.ts` and persisted under the key `nook-settings`.
 
 ### 2.2 Activity Queue Schema
 ```ts
 interface ActivityItem {
-  id: string;               // uuid
-  type: 'Music' | 'Call' | 'Timer' | 'Download' | 'System';
-  priority: number;         // 1 = Highest
-  payload: Record<string, any>;
-  createdAt: number;        // timestamp ms
-  expiresAt?: number;
+  id: string;
+  type: 'music' | 'call' | 'timer' | 'download' | 'weather';
+  title: string;
+  subtitle?: string;
+  iconName?: string;
+  accentColor?: string;
+  payload?: Record<string, unknown>;
 }
 ```
 
-### 2.3 Secure Preferences
-- Authentication tokens, notification channels → `expo-secure-store`.
+This is implemented by `useActivityStore.ts` and persisted under the key `nook-activity`.
 
 ---
 
-## 3. Event Bus Architecture
+## 3. Event Flow Architecture
 
-All system-level events (music change, timer tick, call incoming) are emitted through a central `EventBus.ts` service.
+The current repo does not use a separate `EventBus.ts` service. Instead, activity transitions are driven by Zustand actions and mock events from `MockEventSimulator.ts`.
 
 ```ts
-export type AppEvent =
-  | { type: 'MEDIA_CHANGED', payload: MediaMetadata }
-  | { type: 'CALL_STARTED', payload: CallDetails }
-  | { type: 'CALL_ENDED' }
-  | { type: 'TIMER_TICK', payload: { remaining: number } }
-  | { type: 'TIMER_COMPLETED' }
-  | { type: 'SYSTEM_HUD', payload: { text: string } }
-  | { type: 'DOWNLOAD_PROGRESS', payload: { percent: number } };
+MockEventSimulator
+  -> useActivityStore.addActivity / showTransient
+  -> island render state (idle / compact / split / expanded / transient)
 ```
 
-**Event Flow:**
-`Native Listener` → `EventBridge` → `Zustand Store` → `Island FSM Renderer`.
+This keeps the runtime simple and mobile-first while still supporting state-driven update flows.
 
 ---
 
 ## 4. Future Backend Integration
 
-When cloud synchronization is required:
-- **Supabase / Firebase:** Store user settings JSON in a single `user_settings` row per user.
-- **Real-time Activities:** Activity telemetry pushed to an analytics endpoint.
-- **Authentication:** Supabase Auth with JWT tokens (`expo-secure-store` persistence).
+This remains aspirational and not implemented in the current application:
+- **Supabase / Firebase:** possible future sync layer for cross-device settings.
+- **Real-time Activities:** telemetry or notification sync from a backend.
+- **Authentication:** possible `expo-secure-store` usage for tokens if the app later adds auth.
 
-**File Structure for Future Backend:**
-```
-backend/
-├── schema.sql         # Supabase / Postgres schema definitions
-├── auth.js            # Auth service wrapper
-└── api/               # API service layer for sync
-```
+The current repo intentionally stays local-first and client-only.
 
 ---
 
 ## 5. Mock Event Simulator
 
-The `MockEventSimulator.ts` service generates mock music metadata, call events, and timer ticks for sandbox testing in Expo Go (which doesn't support native OS listeners in the emulator).
+The `MockEventSimulator.ts` service generates mock music metadata, call events, and timer ticks for sandbox testing in Expo Go.
 
 ### Mock Event Engine Capabilities:
-- Auto-rotate music track every 30 seconds.
-- Random call simulation (incoming call every 2-5 minutes).
-- Timer auto-start presets for quick demos.
+- Auto-rotate mock music tracks for the island preview.
+- Simulated call and download activities.
+- Transient toast events for testing HUD behavior.
+- Activity actions that feed the live Zustand store without requiring native OS listeners.
 

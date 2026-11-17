@@ -1,7 +1,7 @@
 # 06. Implementation Plan & Roadmap — Nook Mobile
 
 ## Overview
-This document breaks the development of Nook Mobile into manageable phases, each with task IDs, deliverables, and milestone checkpoints.
+This document records the intended milestone structure for Nook Mobile. It is a roadmap, not the source of truth for current build status. For the current repo state, use [STATUS.md](./STATUS.md) and the live code in `src/`.
 
 ---
 
@@ -10,7 +10,7 @@ This document breaks the development of Nook Mobile into manageable phases, each
 
 | ID | Task | Deliverable |
 |---|---|---|
-| P1-01 | Initialize Expo project with TypeScript, React Native Reanimated v3, Gesture Handler, Skia. | Working blank app with Expo start. |
+| P1-01 | Initialize/maintain the Expo project with TypeScript, React Native Reanimated v4, and Gesture Handler. | Working app shell with the island bootstrap. |
 | P1-02 | Design `DynamicIsland.tsx` wrapper component & finite state machine (FSM). | Island state transitions (idle → compact → expanded). |
 | P1-03 | Implement physics engine hook `useSpringPhysics`. | Smooth / Lively / Bouncy presets. |
 | P1-04 | Build `GlassView` component with `expo-blur`. | Glassmorphism test card. |
@@ -23,8 +23,8 @@ This document breaks the development of Nook Mobile into manageable phases, each
 
 | ID | Task | Deliverable |
 |---|---|---|
-| P2-01 | Implement `MusicCard` expanded card with Skia equalizer bars. | Live animated bars with dummy data. |
-| P2-02 | Integrate `react-native-image-colors` for dynamic palette extraction. | Album color tint test. |
+| P2-01 | Implement `MusicCard` expanded card with animated visual feedback. | Live UI demo with dummy data. |
+| P2-02 | Integrate optional palette extraction for dynamic color tinting. | Album-inspired accent color test. |
 | P2-03 | Build `MockEventSimulator` for media change events. | Auto-rotating mock tracks demo. |
 | **Milestone 2:** Fully working music pill & card demo. |
 
