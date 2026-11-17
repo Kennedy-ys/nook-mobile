@@ -1,41 +1,69 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, View, Platform, TouchableOpacity, Text, ScrollView, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useSettingsStore } from './src/store/useSettingsStore';
 import { useActivityStore } from './src/store/useActivityStore';
 import { DynamicIsland } from './src/components/island/DynamicIsland';
-import { GlassView } from './src/components/ui/GlassView';
-import { useSpringPhysics } from './src/hooks/useSpringPhysics';
 import { MockEventSimulator } from './src/services/MockEventSimulator';
+import SettingsScreen from './src/app/settings';
+import { useTheme } from './src/theme/colors';
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<'settings' | 'sandbox'>('settings');
   const visibilityMode = useSettingsStore((s) => s.visibilityMode);
-  const motionPreset = useSettingsStore((s) => s.motionPreset);
-  const translucency = useSettingsStore((s) => s.translucency);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors, isDark } = useTheme(themeMode);
 
   const shouldShowIsland =
     visibilityMode === 'Fixed' ||
     (visibilityMode === 'Smart' && true);
 
-  if (Platform.OS === 'ios') {
-    return (
-      <View style={styles.container}>
-        {shouldShowIsland && <DynamicIsland />}
-        <StatusBar style="light" />
-      </View>
-    );
-  }
-
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
 
-      <View style={styles.islandPlaceholder}>
-        {shouldShowIsland && <DynamicIsland />}
-      </View>
+      {activeTab === 'settings' ? (
+        <View style={styles.fullScreen}>
+          <SettingsScreen onExit={() => setActiveTab('sandbox')} />
+          {/* Quick toggle pill to switch to Sandbox */}
+          <TouchableOpacity
+            style={[
+              styles.floatingTabToggle,
+              { backgroundColor: colors.glass, borderColor: colors.border },
+            ]}
+            onPress={() => setActiveTab('sandbox')}
+          >
+            <Ionicons name="flask-outline" size={16} color={colors.text} />
+            <Text style={[styles.floatingTabText, { color: colors.text }]}>Sandbox</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.base }]}>
+          <View style={styles.topBar}>
+            <Text style={[styles.topBarTitle, { color: colors.text }]}>Nook Sandbox</Text>
+            <TouchableOpacity
+              style={[
+                styles.openSettingsBtn,
+                { backgroundColor: colors.glass, borderColor: colors.border },
+              ]}
+              onPress={() => setActiveTab('settings')}
+            >
+              <Ionicons name="settings-outline" size={16} color={colors.text} />
+              <Text style={[styles.openSettingsBtnText, { color: colors.text }]}>Settings</Text>
+            </TouchableOpacity>
+          </View>
 
-      <SandboxControls />
-    </SafeAreaView>
+          <View style={styles.islandPlaceholder}>
+            {shouldShowIsland && <DynamicIsland />}
+          </View>
+
+          <SandboxControls />
+        </SafeAreaView>
+      )}
+    </GestureHandlerRootView>
   );
 }
 
@@ -89,7 +117,7 @@ function SandboxControls() {
 
   return (
     <View style={styles.sandboxContainer}>
-      <Text style={styles.sandboxTitle}>Nook Sandbox Controls</Text>
+      <Text style={styles.sandboxTitle}>Island Controls & Triggers</Text>
 
       <View style={styles.buttonRow}>
         <SandboxButton label="Music" onPress={addMusic} color="#30D158" />
@@ -143,9 +171,56 @@ function SandboxButton({ label, onPress, color }: { label: string; onPress: () =
 }
 
 const styles = StyleSheet.create({
+  fullScreen: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0e',
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  topBarTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  openSettingsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  openSettingsBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  floatingTabToggle: {
+    position: 'absolute',
+    bottom: 24,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 1,
+    gap: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  floatingTabText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   islandPlaceholder: {
     height: 80,

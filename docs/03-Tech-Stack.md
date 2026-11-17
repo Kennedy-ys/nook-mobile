@@ -4,14 +4,14 @@
 
 | Layer | Technology | Justification |
 |---|---|---|
-| **Core Framework** | **React Native + Expo SDK 52** | Cross-platform flexibility, fast iteration, modern native architecture (New Architecture / Fabric ready). |
-| **Animation Engine** | **`react-native-reanimated` v3** | Drives 60/120fps physics-based spring animations directly on the UI thread without crossing the JS bridge. |
-| **Graphics & Audio FX** | **`@shopify/react-native-skia`** | Enables hardware-accelerated real-time audio visualizers, smooth waveforms, and dynamic gradient blurs. |
-| **Gesture Management** | **`react-native-gesture-handler`** | Handles multi-touch pan, swipe, tap, and long-press interactions with native responsiveness. |
-| **Color Extraction** | **`react-native-image-colors`** | Extracts primary/secondary color palettes from artwork thumbnails in real-time for dynamic tinting. |
-| **Haptic Feedback** | **`expo-haptics`** | Delivers tactile feedback for button presses, card expansions, and slider snaps. |
-| **State & Persistence** | **Zustand + `react-native-mmkv`** | Ultra-fast synchronous key-value storage for settings, custom physics params, and widget states. |
-| **Icons & Typography** | **`@expo/vector-icons` (Lucide / Feather)** | Crisp, modern vector icon set tailored for dark glassmorphic UI cards. |
+| **Core Framework** | **React Native + Expo ~58.0.25** | Current project uses the installed Expo 58 toolchain with a modern React Native 0.88 runtime. |
+| **Animation Engine** | **`react-native-reanimated` v4** | Runs spring-driven transitions on the UI thread and matches the current repo implementation (`4.7.1`). |
+| **Graphics & Audio FX** | **Planned / optional visual layer** | The repo currently keeps the island lightweight; visual effects are implemented through lightweight UI and motion patterns rather than a full Skia stack at this moment. |
+| **Gesture Management** | **`react-native-gesture-handler`** | Handles tap and gesture-based island interactions in the current app shell. |
+| **Color Extraction** | **Planned / optional enhancement** | Dynamic palette extraction is part of the product vision, but it is not the active runtime dependency in this codebase today. |
+| **Haptic Feedback** | **`expo-haptics`** | Delivers tactile feedback for state changes and activity actions. |
+| **State & Persistence** | **Zustand + `@react-native-async-storage/async-storage`** | The live app persists settings and activity state through AsyncStorage via Zustand middleware. |
+| **Icons & Typography** | **`@expo/vector-icons`** | Used for crisp, modern vector icons in the glass UI. |
 
 ---
 
@@ -81,24 +81,22 @@ DynamicBar/
 
 ---
 
-## 3. Environment Variables & Storage Keys
+## 3. Current persistence model
 
-### Storage Keys (`react-native-mmkv`)
-- `NOOK_SETTINGS_V1`: User preferences (visibility mode, active modules, notch offset).
-- `NOOK_PHYSICS_PRESET`: Active spring preset (`smooth` | `lively` | `bouncy`).
-- `NOOK_THEME_CUSTOM`: Custom glassmorphism opacity, blur intensity, and border color.
+The live app uses Zustand with `persist` + `AsyncStorage` for local state. The project has `react-native-mmkv` installed, but the active implementation stores values through `@react-native-async-storage/async-storage` in the current Zustand stores.
+
+### Storage keys in current implementation
+- `nook-settings`: persisted settings including visibility mode, motion preset, translucency, notch offset, and haptics preferences.
+- `nook-activity`: persisted island state and active activity list.
 
 ---
 
 ## 4. Native Development Setup Commands
 
 ```bash
-# Initialize Expo project with TypeScript template
-npx create-expo-app@latest . --template blank-typescript
+# Initialize or refresh an Expo app
+npx expo install react-native-reanimated react-native-gesture-handler expo-haptics expo-blur react-native-safe-area-context @react-native-async-storage/async-storage
 
-# Install Reanimated, Gesture Handler, Skia, Haptics, and MMKV
-npx expo install react-native-reanimated react-native-gesture-handler @shopify/react-native-skia expo-haptics expo-blur react-native-mmkv
-
-# Install icon sets and image palette extractor
-npm install @expo/vector-icons react-native-image-colors zustand
+# Add the app state layer and icon package used in this repo
+npx expo install zustand @expo/vector-icons
 ```

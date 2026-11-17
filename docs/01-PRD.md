@@ -3,6 +3,8 @@
 ## 1. Overview & Vision
 **Nook Mobile** brings the fluid, non-intrusive "Dynamic Island / Top Bar" experience from desktop software (Nook by Adarzh) to mobile devices. It acts as an ambient HUD (Heads-Up Display) positioned at the top of the screen that dynamically expands, morphs, and splits to surface live activities, system notifications, media controls, and quick status utilities without interrupting the user's current app context.
 
+This document describes the product target state. It is intentionally aspirational for the app vision; the current codebase should be checked against the live implementation and the repo status tracker when determining what is already shipped.
+
 ---
 
 ## 2. Problem Statement

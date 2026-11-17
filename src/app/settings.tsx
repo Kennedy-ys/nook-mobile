@@ -1,463 +1,1247 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, Platform } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useSettingsStore } from '../store/useSettingsStore';
-import { useActivityStore } from '../store/useActivityStore';
-import { DynamicIsland } from '../components/island/DynamicIsland';
-import { GlassView } from '../components/ui/GlassView';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme, state } from '../theme/colors';
+import { useSettingsStore, DisplayTarget, ClickAction, WeatherUnits } from '../store/useSettingsStore';
+import { triggerHaptic } from '../utils/haptics';
 
-export default function SettingsScreen() {
-  const visibilityMode = useSettingsStore((s) => s.visibilityMode);
-  const motionPreset = useSettingsStore((s) => s.motionPreset);
-  const translucency = useSettingsStore((s) => s.translucency);
+import { SettingsBackground } from '../components/settings/SettingsBackground';
+import { SettingsHeader } from '../components/settings/SettingsHeader';
+import { IslandPreviewCard } from '../components/settings/IslandPreviewCard';
+import { RadioOptionCard } from '../components/settings/RadioOptionCard';
+import { SettingsGroupCard, SettingsDivider } from '../components/settings/SettingsGroupCard';
+import { SettingsToggleRow } from '../components/settings/SettingsToggleRow';
+import { SettingsSegmentedControl } from '../components/settings/SettingsSegmentedControl';
+import { SettingsSliderRow } from '../components/settings/SettingsSliderRow';
+
+export type SettingsScreenId =
+  | 'main'
+  | 'general'
+  | 'island'
+  | 'appearance'
+  | 'motion'
+  | 'sound'
+  | 'weather'
+  | 'connection'
+  | 'about';
+
+interface SettingsScreenProps {
+  initialScreen?: SettingsScreenId;
+  onExit?: () => void;
+}
+
+export default function SettingsScreen({ initialScreen = 'main', onExit }: SettingsScreenProps) {
+  const [currentScreen, setCurrentScreen] = useState<SettingsScreenId>(initialScreen);
+
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const setThemeMode = useSettingsStore((s) => s.setThemeMode);
   const hapticsEnabled = useSettingsStore((s) => s.hapticsEnabled);
-  const notchOffset = useSettingsStore((s) => s.notchOffset);
-  const setVisibilityMode = useSettingsStore((s) => s.setVisibilityMode);
-  const setMotionPreset = useSettingsStore((s) => s.setMotionPreset);
-  const setHapticsEnabled = useSettingsStore((s) => s.setHapticsEnabled);
-  const setNotchOffset = useSettingsStore((s) => s.setNotchOffset);
+  const { isDark } = useTheme(themeMode);
 
-  const mockActivity = {
-    id: 'preview-music',
-    type: 'music' as const,
-    title: 'Preview Track',
-    subtitle: 'Preview Artist',
-    accentColor: '#30D158',
-    payload: { albumArt: 'https://picsum.photos/seed/preview/300/300' },
+  const navigateTo = (screen: SettingsScreenId) => {
+    if (hapticsEnabled) {
+      triggerHaptic('selection');
+    }
+    setCurrentScreen(screen);
+  };
+
+  const goBack = () => {
+    if (currentScreen === 'main') {
+      if (onExit) onExit();
+    } else {
+      navigateTo('main');
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+    <SettingsBackground>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
 
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Nook Settings</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Live Preview Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Live Preview</Text>
-          <GlassView style={styles.previewContainer}>
-            <DynamicIsland />
-          </GlassView>
-          <Text style={styles.previewHint}>
-            Changes apply instantly. Tap the island to expand.
-          </Text>
-        </View>
-
-        {/* Visibility Mode */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Visibility Mode</Text>
-          <View style={styles.optionRow}>
-            {(['Smart', 'Fixed', 'Hidden'] as const).map((mode) => (
-              <TouchableOpacity
-                key={mode}
-                style={[
-                  styles.optionButton,
-                  visibilityMode === mode && styles.optionButtonActive,
-                ]}
-                onPress={() => setVisibilityMode(mode)}
-              >
-                <Text style={[styles.optionText, visibilityMode === mode && styles.optionTextActive]}>
-                  {mode}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Motion Preset */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Motion Preset</Text>
-          <View style={styles.optionRow}>
-            {(['Smooth', 'Lively', 'Bouncy'] as const).map((preset) => (
-              <TouchableOpacity
-                key={preset}
-                style={[
-                  styles.optionButton,
-                  motionPreset === preset && styles.optionButtonActive,
-                ]}
-                onPress={() => setMotionPreset(preset)}
-              >
-                <Text style={[styles.optionText, motionPreset === preset && styles.optionTextActive]}>
-                  {preset}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Translucency Slider */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Translucency: {translucency}%
-          </Text>
-          <View style={styles.sliderContainer}>
-            <Text style={styles.sliderLabel}>0%</Text>
-            <View style={styles.sliderTrack}>
-              <View
-                style={[
-                  styles.sliderFill,
-                  { width: `${translucency}%` },
-                ]}
-              />
-            </View>
-            <Text style={styles.sliderLabel}>100%</Text>
-          </View>
-          <View style={styles.sliderTrack}>
-            <View
-              style={[
-                styles.sliderFill,
-                { width: `${translucency}%` },
-              ]}
-            />
-          </View>
-          <View style={styles.sliderHandleContainer}>
-            <View
-              style={[
-                styles.sliderThumb,
-                { left: `${translucency}%` },
-              ]}
-            />
-          </View>
-        </View>
-
-        {/* Haptics Toggle */}
-        <View style={styles.section}>
-          <View style={styles.toggleRow}>
-            <View>
-              <Text style={styles.toggleTitle}>Haptic Feedback</Text>
-              <Text style={styles.toggleSubtitle}>Vibration on state changes</Text>
-            </View>
-            <TouchableOpacity
-              style={[
-                styles.toggleTrack,
-                hapticsEnabled && styles.toggleTrackActive,
-              ]}
-              onPress={() => setHapticsEnabled(!hapticsEnabled)}
-            >
-              <View
-                style={[
-                  styles.toggleThumb,
-                  hapticsEnabled && styles.toggleThumbActive,
-                ]}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Notch Offset */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Notch Offset: {notchOffset}px
-          </Text>
-          <View style={styles.sliderTrack}>
-            <View
-              style={[
-                styles.sliderFill,
-                { width: `${((notchOffset + 20) / 60) * 100}%` },
-              ]}
-            />
-          </View>
-          <View style={styles.sliderControls}>
-            <TouchableOpacity
-              style={styles.adjustButton}
-              onPress={() => setNotchOffset(Math.max(-20, notchOffset - 2))}
-            >
-              <Text style={styles.adjustButtonText}>−</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.adjustButton}
-              onPress={() => setNotchOffset(Math.min(40, notchOffset + 2))}
-            >
-              <Text style={styles.adjustButtonText}>+</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Test Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Test Actions</Text>
-          <View style={styles.buttonGrid}>
-            <TouchableOpacity
-              style={[styles.testButton, { backgroundColor: '#30D158' }]}
-              onPress={() => {
-                useActivityStore.getState().addActivity(mockActivity);
-                useActivityStore.getState().setIslandState('expanded');
-              }}
-            >
-              <Text style={styles.testButtonText}>Add Music & Expand</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.testButton, { backgroundColor: '#0A84FF' }]}
-              onPress={() => {
-                useActivityStore.getState().showTransient('Volume: 75%');
-              }}
-            >
-              <Text style={styles.testButtonText}>Show HUD Toast</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.testButton, { backgroundColor: '#FF3B30' }]}
-              onPress={() => {
-                useActivityStore.getState().clearActivities();
-              }}
-            >
-              <Text style={styles.testButtonText}>Clear All</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.testButton, { backgroundColor: '#AF52DE' }]}
-              onPress={() => {
-                useActivityStore.getState().addActivity({
-                  id: 'preview-timer',
-                  type: 'timer',
-                  title: 'Preview Timer',
-                  accentColor: '#FF3B30',
-                  payload: { remaining: 120000, duration: 120000, active: true, stopwatchActive: false, elapsed: 0 },
-                });
-                useActivityStore.getState().setIslandState('expanded');
-              }}
-            >
-              <Text style={styles.testButtonText}>Add Timer & Expand</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* About */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <View style={styles.aboutCard}>
-            <Text style={styles.aboutText}>
-              Nook Mobile — Dynamic Island for React Native
-            </Text>
-            <Text style={styles.aboutVersion}>
-              Expo SDK 52 • Reanimated v3 • Zustand • MMKV
-            </Text>
-            <Text style={styles.aboutVersion}>
-              Built with security-first principles
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        {currentScreen === 'main' && (
+          <MainSettingsView
+            onNavigate={navigateTo}
+            onToggleTheme={() => setThemeMode(isDark ? 'light' : 'dark')}
+            onExit={onExit}
+          />
+        )}
+        {currentScreen === 'general' && <GeneralSettingsView onBack={goBack} />}
+        {currentScreen === 'island' && <IslandSettingsView onBack={goBack} />}
+        {currentScreen === 'appearance' && <AppearanceSettingsView onBack={goBack} />}
+        {currentScreen === 'motion' && <MotionSettingsView onBack={goBack} />}
+        {currentScreen === 'sound' && <SoundSettingsView onBack={goBack} />}
+        {currentScreen === 'weather' && <WeatherSettingsView onBack={goBack} />}
+        {currentScreen === 'connection' && <ConnectionSettingsView onBack={goBack} />}
+        {currentScreen === 'about' && <AboutSettingsView onBack={goBack} />}
+      </SafeAreaView>
+    </SettingsBackground>
   );
 }
 
+// -------------------------------------------------------------
+// 1. MAIN SETTINGS VIEW
+// -------------------------------------------------------------
+function MainSettingsView({
+  onNavigate,
+  onToggleTheme,
+  onExit,
+}: {
+  onNavigate: (s: SettingsScreenId) => void;
+  onToggleTheme: () => void;
+  onExit?: () => void;
+}) {
+  const computerName = useSettingsStore((s) => s.computerName);
+  const isConnected = useSettingsStore((s) => s.isConnected);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors, isDark } = useTheme(themeMode);
+
+  const menuItems: { id: SettingsScreenId; title: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { id: 'general', title: 'General', icon: 'sunny-outline' },
+    { id: 'island', title: 'Island', icon: 'browsers-outline' },
+    { id: 'appearance', title: 'Appearance', icon: 'brush-outline' },
+    { id: 'motion', title: 'Motion', icon: 'sparkles-outline' },
+    { id: 'sound', title: 'Sound & keys', icon: 'volume-high-outline' },
+    { id: 'weather', title: 'Weather', icon: 'moon-outline' },
+    { id: 'about', title: 'About', icon: 'information-circle-outline' },
+  ];
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.topHeaderRow}>
+        <SettingsHeader title="Settings" />
+        <View style={styles.topHeaderActions}>
+          <TouchableOpacity
+            accessibilityLabel="Toggle Theme"
+            onPress={onToggleTheme}
+            style={[
+              styles.themeToggleBtn,
+              {
+                backgroundColor: colors.glass,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Ionicons name={isDark ? 'sunny' : 'moon'} size={18} color={colors.text} />
+          </TouchableOpacity>
+          {onExit && (
+            <TouchableOpacity
+              accessibilityLabel="Close Settings"
+              onPress={onExit}
+              style={[
+                styles.themeToggleBtn,
+                {
+                  backgroundColor: colors.glass,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <Ionicons name="close" size={18} color={colors.text} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* Top Island Preview */}
+      <IslandPreviewCard variant="notch" />
+
+      {/* Connected Computer Card */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => onNavigate('connection')}
+        style={[
+          styles.computerCard,
+          {
+            backgroundColor: colors.glass,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <View style={styles.computerIconTile}>
+          <Ionicons name="desktop-outline" size={20} color="#2FBF5B" />
+        </View>
+        <View style={styles.computerTextCol}>
+          <Text style={[styles.computerName, { color: colors.text }]}>{computerName}</Text>
+          <View style={styles.connectedRow}>
+            <View
+              style={[
+                styles.connectedDot,
+                { backgroundColor: isConnected ? '#2FBF5B' : '#FF9F0A' },
+              ]}
+            />
+            <Text style={[styles.connectedStatus, { color: colors.subtext }]}>
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </Text>
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.subtext} />
+      </TouchableOpacity>
+
+      {/* Settings Navigation Menu Card */}
+      <SettingsGroupCard>
+        {menuItems.map((item, index) => (
+          <React.Fragment key={item.id}>
+            {index > 0 && <SettingsDivider />}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => onNavigate(item.id)}
+              style={styles.menuRow}
+            >
+              <Ionicons name={item.icon} size={20} color={colors.text} style={styles.menuIcon} />
+              <Text style={[styles.menuTitle, { color: colors.text }]}>{item.title}</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.subtext} />
+            </TouchableOpacity>
+          </React.Fragment>
+        ))}
+      </SettingsGroupCard>
+
+      <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
+    </ScrollView>
+  );
+}
+
+// -------------------------------------------------------------
+// 2. GENERAL SETTINGS VIEW
+// -------------------------------------------------------------
+function GeneralSettingsView({ onBack }: { onBack: () => void }) {
+  const visibilityMode = useSettingsStore((s) => s.visibilityMode);
+  const setVisibilityMode = useSettingsStore((s) => s.setVisibilityMode);
+  const showCallsInFullscreen = useSettingsStore((s) => s.showCallsInFullscreen);
+  const setShowCallsInFullscreen = useSettingsStore((s) => s.setShowCallsInFullscreen);
+  const launchAtLogin = useSettingsStore((s) => s.launchAtLogin);
+  const setLaunchAtLogin = useSettingsStore((s) => s.setLaunchAtLogin);
+  const displayTarget = useSettingsStore((s) => s.displayTarget);
+  const setDisplayTarget = useSettingsStore((s) => s.setDisplayTarget);
+  const showTrayIcon = useSettingsStore((s) => s.showTrayIcon);
+  const setShowTrayIcon = useSettingsStore((s) => s.setShowTrayIcon);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors, isDark } = useTheme(themeMode);
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <SettingsHeader title="General" onBack={onBack} />
+      <IslandPreviewCard variant="notch" />
+
+      <Text style={[styles.sectionTitle, { color: colors.subtext }]}>ISLAND VISIBILITY</Text>
+
+      <RadioOptionCard
+        title="Smart"
+        subtitle="Visible over the desktop and windowed apps; hides when an app is maximized."
+        isSelected={visibilityMode === 'Smart'}
+        onSelect={() => setVisibilityMode('Smart')}
+        renderIllustration={() => (
+          <View style={styles.miniIllustration}>
+            <View style={[styles.miniDesktopPill, { backgroundColor: isDark ? '#1C2438' : '#D0DBF0' }]}>
+              <View style={styles.miniIslandBlack} />
+            </View>
+            <View style={[styles.miniAppWindow, { backgroundColor: isDark ? '#2D3748' : '#FFFFFF' }]}>
+              <View style={styles.miniIslandBlack} />
+            </View>
+          </View>
+        )}
+      />
+
+      <RadioOptionCard
+        title="Fixed"
+        subtitle="Always visible (hidden in fullscreen)."
+        isSelected={visibilityMode === 'Fixed'}
+        onSelect={() => setVisibilityMode('Fixed')}
+        renderIllustration={() => (
+          <View style={styles.miniIllustration}>
+            <View style={[styles.miniDesktopPill, { backgroundColor: isDark ? '#1C2438' : '#D0DBF0' }]}>
+              <View style={styles.miniIslandBlack} />
+            </View>
+            <View style={[styles.miniAppWindow, { backgroundColor: isDark ? '#2D3748' : '#FFFFFF' }]}>
+              <View style={styles.miniIslandBlack} />
+            </View>
+          </View>
+        )}
+      />
+
+      <RadioOptionCard
+        title="Hidden"
+        subtitle="Stays hidden until you move to the top edge."
+        isSelected={visibilityMode === 'Hidden'}
+        onSelect={() => setVisibilityMode('Hidden')}
+        renderIllustration={() => (
+          <View style={styles.miniIllustration}>
+            <View style={[styles.miniDesktopPill, { backgroundColor: isDark ? '#1C2438' : '#D0DBF0', borderStyle: 'dashed' }]}>
+              <View style={[styles.miniIslandBlack, { opacity: 0.3 }]} />
+            </View>
+            <View style={[styles.miniAppWindow, { backgroundColor: isDark ? '#2D3748' : '#FFFFFF', borderStyle: 'dashed' }]}>
+              <View style={[styles.miniIslandBlack, { opacity: 0.3 }]} />
+            </View>
+          </View>
+        )}
+      />
+
+      <Text style={[styles.sectionCaption, { color: colors.subtext }]}>
+        Calls and mic/camera stay visible in fullscreen apps and games.
+      </Text>
+
+      <SettingsGroupCard>
+        <SettingsToggleRow
+          title="Show calls and mic/camera in fullscreen"
+          subtitle="Everything else stays hidden in fullscreen apps and games."
+          value={showCallsInFullscreen}
+          onValueChange={setShowCallsInFullscreen}
+        />
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Launch at login"
+          subtitle="Managed in your system’s startup settings"
+          value={launchAtLogin}
+          onValueChange={setLaunchAtLogin}
+        />
+        <SettingsDivider />
+        <View style={styles.segmentedRow}>
+          <Text style={[styles.rowTitle, { color: colors.text }]}>Show the island on</Text>
+          <SettingsSegmentedControl<DisplayTarget>
+            options={[
+              { label: 'Main display', value: 'main' },
+              { label: 'Display with cursor', value: 'cursor' },
+            ]}
+            value={displayTarget}
+            onChange={setDisplayTarget}
+          />
+        </View>
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Show icon in the tray"
+          subtitle="Settings are always in the app menu too."
+          value={showTrayIcon}
+          onValueChange={setShowTrayIcon}
+        />
+      </SettingsGroupCard>
+
+      <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
+    </ScrollView>
+  );
+}
+
+// -------------------------------------------------------------
+// 3. ISLAND SETTINGS VIEW
+// -------------------------------------------------------------
+function IslandSettingsView({ onBack }: { onBack: () => void }) {
+  const activities = useSettingsStore((s) => s.activities);
+  const setActivityEnabled = useSettingsStore((s) => s.setActivityEnabled);
+  const clickAction = useSettingsStore((s) => s.clickAction);
+  const setClickAction = useSettingsStore((s) => s.setClickAction);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors } = useTheme(themeMode);
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <SettingsHeader title="Island" onBack={onBack} />
+      <IslandPreviewCard variant="island" />
+
+      <Text style={[styles.sectionTitle, { color: colors.subtext }]}>LIVE ACTIVITIES</Text>
+
+      <SettingsGroupCard>
+        <SettingsToggleRow
+          title="Music"
+          subtitle="Cover and bars while something plays"
+          value={activities.music}
+          onValueChange={(v) => setActivityEnabled('music', v)}
+          iconTile={{
+            icon: <Ionicons name="musical-notes" size={18} color={state.music.tile} />,
+            color: state.music.tile,
+          }}
+        />
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Keep music visible"
+          subtitle="Show the music pill over apps in Smart mode"
+          value={activities.keepMusicVisible}
+          onValueChange={(v) => setActivityEnabled('keepMusicVisible', v)}
+        />
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Calls"
+          subtitle="Teams, Zoom, Discord and others"
+          value={activities.calls}
+          onValueChange={(v) => setActivityEnabled('calls', v)}
+          iconTile={{
+            icon: <Ionicons name="call" size={18} color={state.call.tile} />,
+            color: state.call.tile,
+          }}
+        />
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Timer & stopwatch"
+          subtitle="Countdown at a glance"
+          value={activities.timer}
+          onValueChange={(v) => setActivityEnabled('timer', v)}
+          iconTile={{
+            icon: <Ionicons name="timer-outline" size={18} color={state.timer.tile} />,
+            color: state.timer.tile,
+          }}
+        />
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Downloads"
+          subtitle="Progress, then Open when done"
+          value={activities.downloads}
+          onValueChange={(v) => setActivityEnabled('downloads', v)}
+          iconTile={{
+            icon: <Ionicons name="download-outline" size={18} color={state.download.tile} />,
+            color: state.download.tile,
+          }}
+        />
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Clipboard"
+          subtitle="A quick “Copied” note"
+          value={activities.clipboard}
+          onValueChange={(v) => setActivityEnabled('clipboard', v)}
+          iconTile={{
+            icon: <Ionicons name="clipboard-outline" size={18} color={state.clipboard.tile} />,
+            color: state.clipboard.tile,
+          }}
+        />
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Caps Lock & Num Lock"
+          subtitle="Shows when you press them"
+          value={activities.keyLocks}
+          onValueChange={(v) => setActivityEnabled('keyLocks', v)}
+          iconTile={{
+            icon: <Ionicons name="keypad-outline" size={18} color={state.keyLocks.tile} />,
+            color: state.keyLocks.tile,
+          }}
+        />
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Battery & charging"
+          subtitle="Plugged in, full and low"
+          value={activities.battery}
+          onValueChange={(v) => setActivityEnabled('battery', v)}
+          iconTile={{
+            icon: <Ionicons name="battery-charging" size={18} color={state.battery.tile} />,
+            color: state.battery.tile,
+          }}
+        />
+      </SettingsGroupCard>
+
+      <Text style={[styles.sectionTitle, { color: colors.subtext }]}>CLICKING THE ISLAND</Text>
+
+      <SettingsGroupCard>
+        <View style={styles.segmentedRow}>
+          <Text style={[styles.rowTitle, { color: colors.text }]}>When you click</Text>
+          <SettingsSegmentedControl<ClickAction>
+            options={[
+              { label: 'Opens the card', value: 'open_card' },
+              { label: 'Does nothing', value: 'none' },
+            ]}
+            value={clickAction}
+            onChange={setClickAction}
+          />
+        </View>
+      </SettingsGroupCard>
+
+      <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
+    </ScrollView>
+  );
+}
+
+// -------------------------------------------------------------
+// 4. APPEARANCE SETTINGS VIEW
+// -------------------------------------------------------------
+function AppearanceSettingsView({ onBack }: { onBack: () => void }) {
+  const islandBackground = useSettingsStore((s) => s.islandBackground);
+  const setIslandBackground = useSettingsStore((s) => s.setIslandBackground);
+  const translucentPill = useSettingsStore((s) => s.translucentPill);
+  const setTranslucentPill = useSettingsStore((s) => s.setTranslucentPill);
+  const translucency = useSettingsStore((s) => s.translucency);
+  const setTranslucency = useSettingsStore((s) => s.setTranslucency);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors, isDark } = useTheme(themeMode);
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <SettingsHeader title="Appearance" onBack={onBack} />
+      <IslandPreviewCard variant="appearance" />
+
+      <Text style={[styles.sectionTitle, { color: colors.subtext }]}>BACKGROUND</Text>
+
+      <RadioOptionCard
+        title="Pure black"
+        subtitle="Just the shape, nothing around it."
+        isSelected={islandBackground === 'black'}
+        onSelect={() => setIslandBackground('black')}
+        renderIllustration={() => (
+          <View style={styles.miniIllustration}>
+            <View style={[styles.miniAppWindow, { backgroundColor: isDark ? '#2D3748' : '#FFFFFF' }]}>
+              <View style={styles.miniIslandBlack} />
+            </View>
+          </View>
+        )}
+      />
+
+      <RadioOptionCard
+        title="Edge + shadow"
+        subtitle="A fine edge and a soft shadow; lifts it off light wallpapers."
+        isSelected={islandBackground === 'edge_shadow'}
+        onSelect={() => setIslandBackground('edge_shadow')}
+        renderIllustration={() => (
+          <View style={styles.miniIllustration}>
+            <View style={[styles.miniAppWindow, { backgroundColor: isDark ? '#2D3748' : '#FFFFFF' }]}>
+              <View
+                style={[
+                  styles.miniIslandBlack,
+                  { borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.4)' },
+                ]}
+              />
+            </View>
+          </View>
+        )}
+      />
+
+      <RadioOptionCard
+        title="Edge + activity tint"
+        subtitle="A fine edge and a faint glow in the activity’s colour."
+        isSelected={islandBackground === 'edge_tint'}
+        onSelect={() => setIslandBackground('edge_tint')}
+        renderIllustration={() => (
+          <View style={styles.miniIllustration}>
+            <View style={[styles.miniAppWindow, { backgroundColor: isDark ? '#2D3748' : '#FFFFFF' }]}>
+              <View
+                style={[
+                  styles.miniIslandBlack,
+                  { borderWidth: 1.5, borderColor: '#2BD35C' },
+                ]}
+              />
+            </View>
+          </View>
+        )}
+      />
+
+      <Text style={[styles.sectionTitle, { color: colors.subtext }]}>TRANSPARENCY</Text>
+
+      <SettingsGroupCard>
+        <SettingsToggleRow
+          title="Translucent pill"
+          subtitle="Lets the wallpaper show through the island."
+          value={translucentPill}
+          onValueChange={setTranslucentPill}
+        />
+        <SettingsDivider />
+        <SettingsSliderRow
+          label="Opacity"
+          value={translucency}
+          onValueChange={setTranslucency}
+        />
+      </SettingsGroupCard>
+
+      <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
+    </ScrollView>
+  );
+}
+
+// -------------------------------------------------------------
+// 5. MOTION SETTINGS VIEW
+// -------------------------------------------------------------
+function MotionSettingsView({ onBack }: { onBack: () => void }) {
+  const motionPreset = useSettingsStore((s) => s.motionPreset);
+  const setMotionPreset = useSettingsStore((s) => s.setMotionPreset);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors } = useTheme(themeMode);
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <SettingsHeader title="Motion" onBack={onBack} />
+      <IslandPreviewCard variant="motion" />
+
+      <Text style={[styles.sectionCaption, { color: colors.subtext, marginTop: -4 }]}>
+        Nook Flow · one motion style for every transition
+      </Text>
+
+      <RadioOptionCard
+        title="Smooth"
+        subtitle="Calm, settles without overshoot"
+        isSelected={motionPreset === 'Smooth'}
+        onSelect={() => setMotionPreset('Smooth')}
+        renderIllustration={() => (
+          <View style={styles.miniIllustration}>
+            <View style={styles.miniMotionPill} />
+          </View>
+        )}
+      />
+
+      <RadioOptionCard
+        title="Lively"
+        subtitle="Quick, with a little bounce"
+        isSelected={motionPreset === 'Lively'}
+        onSelect={() => setMotionPreset('Lively')}
+        renderIllustration={() => (
+          <View style={styles.miniIllustration}>
+            <View style={styles.miniMotionPill} />
+          </View>
+        )}
+      />
+
+      <RadioOptionCard
+        title="Bouncy"
+        subtitle="Playful, ripples into place"
+        isSelected={motionPreset === 'Bouncy'}
+        onSelect={() => setMotionPreset('Bouncy')}
+        renderIllustration={() => (
+          <View style={styles.miniIllustration}>
+            <View style={styles.miniMotionPill} />
+          </View>
+        )}
+      />
+
+      {/* Reduced Motion Follows System Card */}
+      <View
+        style={[
+          styles.infoCard,
+          {
+            backgroundColor: colors.glass,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <Ionicons name="information-circle-outline" size={20} color={colors.subtext} />
+        <Text style={[styles.infoText, { color: colors.subtext }]}>
+          Reduced motion follows your system setting.
+        </Text>
+      </View>
+
+      <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
+    </ScrollView>
+  );
+}
+
+// -------------------------------------------------------------
+// 6. SOUND & KEYS VIEW
+// -------------------------------------------------------------
+function SoundSettingsView({ onBack }: { onBack: () => void }) {
+  const hideSystemVolumeHUD = useSettingsStore((s) => s.hideSystemVolumeHUD);
+  const setHideSystemVolumeHUD = useSettingsStore((s) => s.setHideSystemVolumeHUD);
+  const scrollVolumeControl = useSettingsStore((s) => s.scrollVolumeControl);
+  const setScrollVolumeControl = useSettingsStore((s) => s.setScrollVolumeControl);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors } = useTheme(themeMode);
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <SettingsHeader title="Sound & keys" onBack={onBack} />
+      <IslandPreviewCard variant="sound" />
+
+      <SettingsGroupCard>
+        <SettingsToggleRow
+          title="Hide the system volume pop-up"
+          subtitle="Nook shows the level in the island instead. Volume keys keep working if Nook closes."
+          value={hideSystemVolumeHUD}
+          onValueChange={setHideSystemVolumeHUD}
+        />
+        <SettingsDivider />
+        <SettingsToggleRow
+          title="Scroll over the music to change volume"
+          subtitle="Hover the music, then scroll."
+          value={scrollVolumeControl}
+          onValueChange={setScrollVolumeControl}
+        />
+      </SettingsGroupCard>
+
+      <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
+    </ScrollView>
+  );
+}
+
+// -------------------------------------------------------------
+// 7. WEATHER VIEW
+// -------------------------------------------------------------
+function WeatherSettingsView({ onBack }: { onBack: () => void }) {
+  const weatherLocation = useSettingsStore((s) => s.weatherLocation);
+  const weatherUnits = useSettingsStore((s) => s.weatherUnits);
+  const setWeatherUnits = useSettingsStore((s) => s.setWeatherUnits);
+  const showWeatherInIsland = useSettingsStore((s) => s.showWeatherInIsland);
+  const setShowWeatherInIsland = useSettingsStore((s) => s.setShowWeatherInIsland);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors } = useTheme(themeMode);
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <SettingsHeader title="Weather" onBack={onBack} />
+      <IslandPreviewCard variant="weather" />
+
+      <SettingsGroupCard>
+        <TouchableOpacity activeOpacity={0.7} style={styles.navRow}>
+          <View style={styles.navRowTextCol}>
+            <Text style={[styles.rowTitle, { color: colors.text }]}>Location</Text>
+            <Text style={[styles.rowSubtitle, { color: colors.subtext }]}>
+              Used for the forecast in the island
+            </Text>
+          </View>
+          <View style={styles.navRowRight}>
+            <Text style={[styles.locationValue, { color: colors.subtext }]}>
+              {weatherLocation}
+            </Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.subtext} />
+          </View>
+        </TouchableOpacity>
+
+        <SettingsDivider />
+
+        <View style={styles.segmentedRow}>
+          <Text style={[styles.rowTitle, { color: colors.text }]}>Units</Text>
+          <SettingsSegmentedControl<WeatherUnits>
+            options={[
+              { label: '°C', value: 'C' },
+              { label: '°F', value: 'F' },
+            ]}
+            value={weatherUnits}
+            onChange={setWeatherUnits}
+          />
+        </View>
+
+        <SettingsDivider />
+
+        <SettingsToggleRow
+          title="Show weather in the island"
+          subtitle="Glance at conditions without opening anything"
+          value={showWeatherInIsland}
+          onValueChange={setShowWeatherInIsland}
+        />
+      </SettingsGroupCard>
+
+      <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
+    </ScrollView>
+  );
+}
+
+// -------------------------------------------------------------
+// 8. CONNECTION VIEW
+// -------------------------------------------------------------
+function ConnectionSettingsView({ onBack }: { onBack: () => void }) {
+  const computerName = useSettingsStore((s) => s.computerName);
+  const isConnected = useSettingsStore((s) => s.isConnected);
+  const setIsConnected = useSettingsStore((s) => s.setIsConnected);
+  const reconnectAutomatically = useSettingsStore((s) => s.reconnectAutomatically);
+  const setReconnectAutomatically = useSettingsStore((s) => s.setReconnectAutomatically);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors } = useTheme(themeMode);
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <SettingsHeader title="Connection" onBack={onBack} />
+      <IslandPreviewCard variant="notch" />
+
+      <SettingsGroupCard>
+        <View style={styles.connectionDetailRow}>
+          <View style={styles.computerIconTile}>
+            <Ionicons name="desktop-outline" size={20} color="#2FBF5B" />
+          </View>
+          <View style={styles.computerTextCol}>
+            <Text style={[styles.computerName, { color: colors.text }]}>{computerName}</Text>
+            <Text style={[styles.connectedStatus, { color: colors.subtext }]}>
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </Text>
+          </View>
+        </View>
+
+        <SettingsDivider />
+
+        <SettingsToggleRow
+          title="Reconnect automatically"
+          subtitle="Link up whenever your computer is on and nearby."
+          value={reconnectAutomatically}
+          onValueChange={setReconnectAutomatically}
+        />
+      </SettingsGroupCard>
+
+      {/* Action Buttons */}
+      <View style={styles.actionButtonsCol}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[
+            styles.glassActionBtn,
+            { backgroundColor: colors.glass, borderColor: colors.border },
+          ]}
+          onPress={() => {}}
+        >
+          <Text style={[styles.actionBtnText, { color: colors.text }]}>Switch computer</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[
+            styles.glassActionBtn,
+            { backgroundColor: colors.glass, borderColor: colors.border },
+          ]}
+          onPress={() => setIsConnected(!isConnected)}
+        >
+          <Text style={[styles.actionBtnText, { color: colors.danger }]}>
+            {isConnected ? 'Disconnect' : 'Connect'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={[styles.sectionTitle, { color: colors.subtext }]}>
+        IF THE CONNECTION DROPS
+      </Text>
+
+      <View
+        style={[
+          styles.reconnectCard,
+          { backgroundColor: colors.glass, borderColor: colors.border },
+        ]}
+      >
+        <View style={styles.dropHeaderRow}>
+          <View style={styles.warningDot} />
+          <Text style={[styles.dropTitle, { color: colors.text }]}>
+            Can’t reach {computerName}
+          </Text>
+        </View>
+        <Text style={[styles.dropSubtitle, { color: colors.subtext }]}>
+          Changes you make now will sync when you’re back in range.
+        </Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => setIsConnected(true)}
+          style={[styles.primaryReconnectBtn, { backgroundColor: colors.accent }]}
+        >
+          <Text style={[styles.primaryReconnectText, { color: colors.onAccent }]}>
+            Reconnect
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
+    </ScrollView>
+  );
+}
+
+// -------------------------------------------------------------
+// 9. ABOUT VIEW
+// -------------------------------------------------------------
+function AboutSettingsView({ onBack }: { onBack: () => void }) {
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const { colors } = useTheme(themeMode);
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <SettingsHeader title="About" onBack={onBack} />
+      <IslandPreviewCard variant="notch" />
+
+      {/* App Info Card */}
+      <View
+        style={[
+          styles.aboutAppCard,
+          { backgroundColor: colors.glass, borderColor: colors.border },
+        ]}
+      >
+        <View style={styles.appIconN}>
+          <Text style={styles.appIconNText}>N</Text>
+        </View>
+        <View style={styles.appInfoTextCol}>
+          <Text style={[styles.appTitle, { color: colors.text }]}>Nook</Text>
+          <Text style={[styles.appSubtitle, { color: colors.subtext }]}>
+            Version 0.1.4 · Test build
+          </Text>
+          <Text style={[styles.appSubtitle, { color: colors.subtext }]}>
+            Powered by Nook Flow
+          </Text>
+        </View>
+      </View>
+
+      <Text style={[styles.sectionTitle, { color: colors.subtext }]}>TEST VERSION</Text>
+
+      <View
+        style={[
+          styles.testVersionCard,
+          { backgroundColor: colors.glass, borderColor: colors.border },
+        ]}
+      >
+        <View style={styles.testVersionTextCol}>
+          <Text style={[styles.testVersionTitle, { color: colors.text }]}>
+            You’re using a test build
+          </Text>
+          <Text style={[styles.testVersionSub, { color: colors.subtext }]}>
+            Thanks for trying Nook early. Licensing and updates come with the release.
+          </Text>
+        </View>
+        <View style={[styles.versionBadge, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
+          <Text style={[styles.versionBadgeText, { color: colors.text }]}>0.1.4</Text>
+        </View>
+      </View>
+
+      <Text style={[styles.sectionTitle, { color: colors.subtext }]}>CREDITS</Text>
+
+      <SettingsGroupCard>
+        <View style={styles.creditRow}>
+          <Text style={[styles.creditLabel, { color: colors.text }]}>Weather data</Text>
+          <Text style={[styles.creditValue, { color: colors.subtext }]}>MET Norway</Text>
+        </View>
+        <SettingsDivider />
+        <View style={styles.creditRow}>
+          <Text style={[styles.creditLabel, { color: colors.text }]}>Geocoding</Text>
+          <Text style={[styles.creditValue, { color: colors.subtext }]}>
+            OpenStreetMap (Nominatim)
+          </Text>
+        </View>
+        <SettingsDivider />
+        <View style={styles.creditRow}>
+          <Text style={[styles.creditLabel, { color: colors.text }]}>Icons</Text>
+          <Text style={[styles.creditValue, { color: colors.subtext }]}>
+            Fluent UI System Icons
+          </Text>
+        </View>
+        <SettingsDivider />
+        <View style={styles.creditRow}>
+          <Text style={[styles.creditLabel, { color: colors.text }]}>Typeface</Text>
+          <Text style={[styles.creditValue, { color: colors.subtext }]}>Inter</Text>
+        </View>
+      </SettingsGroupCard>
+
+      <Text style={[styles.aboutFooter, { color: colors.subtext }]}>
+        Developed by Adarzh · <Text style={{ color: colors.danger }}>Quit Nook</Text>
+      </Text>
+    </ScrollView>
+  );
+}
+
+// -------------------------------------------------------------
+// STYLES
+// -------------------------------------------------------------
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#0a0a0e',
-  },
-  header: {
-    paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#ffffff',
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    gap: 24,
+    paddingBottom: 40,
   },
-  section: {
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 8,
-  },
-  previewContainer: {
-    height: 200,
-    borderRadius: 20,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  previewHint: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  optionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  optionButtonActive: {
-    backgroundColor: 'rgba(10, 132, 255, 0.3)',
-    borderColor: '#0A84FF',
-  },
-  optionText: {
-    fontSize: 13,
-    color: '#aaa',
-    fontWeight: '500',
-  },
-  optionTextActive: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  sliderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 8,
-  },
-  sliderTrack: {
-    flex: 1,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    overflow: 'hidden',
-    minWidth: 200,
-  },
-  sliderFill: {
-    height: '100%',
-    borderRadius: 3,
-    backgroundColor: '#0A84FF',
-  },
-  sliderLabel: {
-    fontSize: 11,
-    color: '#666',
-    width: 30,
-    textAlign: 'center',
-  },
-  sliderHandleContainer: {
-    height: 24,
-    position: 'relative',
-  },
-  sliderThumb: {
-    position: 'absolute',
-    top: -9,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#0A84FF',
-    borderWidth: 3,
-    borderColor: '#ffffff',
-    transform: [{ translateX: -10 }],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  sliderControls: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 16,
-    marginTop: 8,
-  },
-  adjustButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  adjustButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  toggleRow: {
+  topHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
   },
-  toggleTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#ffffff',
+  topHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 20,
+    gap: 10,
   },
-  toggleSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
-  toggleTrack: {
-    width: 52,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: 2,
+  themeToggleBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  toggleTrackActive: {
-    backgroundColor: '#0A84FF',
-  },
-  toggleThumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#ffffff',
-    alignSelf: 'flex-start',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  toggleThumbActive: {
-    alignSelf: 'flex-end',
-  },
-  buttonGrid: {
+  computerCard: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    gap: 14,
+  },
+  computerIconTile: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(47, 191, 91, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  computerTextCol: {
+    flex: 1,
+    gap: 2,
+  },
+  computerName: {
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  connectedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  connectedDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  connectedStatus: {
+    fontSize: 13,
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 18,
+    gap: 14,
+  },
+  menuIcon: {
+    width: 24,
+  },
+  menuTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: -0.2,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    paddingHorizontal: 20,
+    marginTop: 22,
+    marginBottom: 10,
+  },
+  sectionCaption: {
+    fontSize: 13,
+    lineHeight: 18,
+    paddingHorizontal: 20,
+    marginTop: 6,
+    marginBottom: 14,
+  },
+  segmentedRow: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  rowTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: -0.2,
+  },
+  rowSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  miniIllustration: {
+    flexDirection: 'row',
+    gap: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  miniDesktopPill: {
+    width: 26,
+    height: 30,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    paddingTop: 3,
+  },
+  miniAppWindow: {
+    width: 26,
+    height: 30,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    paddingTop: 3,
+  },
+  miniIslandBlack: {
+    width: 14,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#000000',
+  },
+  miniMotionPill: {
+    width: 32,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#000000',
+  },
+  infoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginTop: 6,
     gap: 12,
   },
-  testButton: {
+  infoText: {
     flex: 1,
-    minWidth: '45%',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 14,
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  navRowTextCol: {
+    flex: 1,
+    gap: 2,
+  },
+  navRowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  locationValue: {
+    fontSize: 15,
+  },
+  connectionDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 14,
+  },
+  actionButtonsCol: {
+    marginTop: 14,
+    marginHorizontal: 16,
+    gap: 10,
+  },
+  glassActionBtn: {
+    paddingVertical: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  reconnectCard: {
+    padding: 18,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    gap: 10,
+  },
+  dropHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  warningDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF9F0A',
+  },
+  dropTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  dropSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  primaryReconnectBtn: {
+    marginTop: 6,
+    paddingVertical: 13,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  testButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#ffffff',
+  primaryReconnectText: {
+    fontSize: 15,
+    fontWeight: '700',
   },
-  aboutCard: {
+  aboutAppCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 16,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginHorizontal: 16,
+    gap: 14,
   },
-  aboutText: {
+  appIconN: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: '#15171E',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appIconNText: {
+    color: '#FFFFFF',
+    fontSize: 26,
+    fontWeight: '900',
+  },
+  appInfoTextCol: {
+    flex: 1,
+    gap: 2,
+  },
+  appTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  appSubtitle: {
+    fontSize: 13,
+  },
+  testVersionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    gap: 12,
+  },
+  testVersionTextCol: {
+    flex: 1,
+    gap: 2,
+  },
+  testVersionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  testVersionSub: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  versionBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  versionBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  creditRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  creditLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 4,
   },
-  aboutVersion: {
-    fontSize: 12,
-    color: '#888',
+  creditValue: {
+    fontSize: 14,
+  },
+  aboutFooter: {
     textAlign: 'center',
-    marginBottom: 2,
+    fontSize: 13,
+    marginTop: 26,
+  },
+  footerText: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: 24,
   },
 });
