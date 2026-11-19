@@ -6,11 +6,14 @@ import Animated, {
   withSequence,
   withSpring,
 } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, island, islandTint } from '../../theme/colors';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { useSpringPhysics } from '../../hooks/useSpringPhysics';
 import { triggerHaptic } from '../../utils/haptics';
+import { BlurredGlowOrb } from './BlurredGlowOrb';
 
 export type PreviewVariant =
   | 'notch'
@@ -118,19 +121,23 @@ export const IslandPreviewCard: React.FC<IslandPreviewCardProps> = ({
         styles.previewContainer,
         {
           borderColor: colors.border,
-          backgroundColor: colors.previewScene[0],
         },
       ]}
     >
-      {/* Scene Backdrop gradient simulation */}
-      <View
-        style={[
-          styles.sceneLayer,
-          {
-            backgroundColor: colors.previewScene[1],
-            opacity: isDark ? 0.6 : 0.8,
-          },
-        ]}
+      {/* Top-to-Bottom Scene Gradient */}
+      <LinearGradient
+        colors={colors.previewScene as unknown as [string, string, ...string[]]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* Subtle Center Aura under the island */}
+      <BlurredGlowOrb
+        color={isDark ? 'rgba(70, 130, 255, 0.35)' : 'rgba(255, 255, 255, 0.45)'}
+        size={220}
+        top={-20}
+        maxOpacity={0.4}
       />
 
       {/* Dynamic Island Centered Preview */}
@@ -214,13 +221,26 @@ export const IslandPreviewCard: React.FC<IslandPreviewCardProps> = ({
           style={[
             styles.replayButton,
             {
-              backgroundColor: isDark ? 'rgba(15, 23, 42, 0.75)' : 'rgba(255, 255, 255, 0.8)',
               borderColor: colors.border,
             },
           ]}
         >
-          <Ionicons name="reload" size={13} color={colors.text} />
-          <Text style={[styles.replayText, { color: colors.text }]}>Replay</Text>
+          <BlurView
+            intensity={40}
+            tint={isDark ? 'dark' : 'light'}
+            style={StyleSheet.absoluteFill}
+          />
+          <View
+            style={[
+              styles.replayInner,
+              {
+                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.45)' : 'rgba(255, 255, 255, 0.55)',
+              },
+            ]}
+          >
+            <Ionicons name="reload" size={13} color={colors.text} />
+            <Text style={[styles.replayText, { color: colors.text }]}>Replay</Text>
+          </View>
         </TouchableOpacity>
       )}
     </View>
@@ -238,9 +258,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     marginBottom: 20,
-  },
-  sceneLayer: {
-    ...StyleSheet.absoluteFill,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 4,
   },
   islandCenterWrapper: {
     position: 'absolute',
@@ -377,12 +399,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 12,
     right: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  replayInner: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
     gap: 5,
   },
   replayText: {

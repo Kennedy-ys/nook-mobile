@@ -12,50 +12,49 @@ This file captures the intended front-end direction for the product. It should b
 **Dynamic Color:** The settings UI uses a fixed, theme-aware palette (dark and light, see 1.2). Colour that changes at runtime is limited to the island itself: it derives from media content (album art) or system state (call active, timer warning).
 
 ### 1.2 Color Tokens
-Tokens mirror the approved mobile designs: every surface is frosted glass over a soft colour-blob backdrop, and every token has a **dark** and a **light** value. Components read colours from `useTheme()` (driven by the OS colour scheme) and never hard-code hex values.
+Tokens mirror the approved mobile designs: every surface is frosted glass over a plain, flat background (charcoal in dark, light grey in light), and every token has a **dark** and a **light** value. Components read colours from `useTheme()` (driven by the OS colour scheme) and never hard-code hex values.
 
 ```ts
 // theme/colors.ts
 export const theme = {
   dark: {
-    base: '#0A0F1F',                      // screen background under the blobs
-    blobs: ['rgba(60,110,255,0.55)', 'rgba(150,80,255,0.40)', 'rgba(20,200,180,0.30)'],
-    glass: 'rgba(255,255,255,0.08)',      // card / button fill
-    border: 'rgba(255,255,255,0.18)',
-    shadow: 'rgba(0,0,0,0.35)',           // 0 8 32 blur
-    text: '#F4F6FB',
+    base: '#1C1D20',                      // plain charcoal screen background
+    glass: 'rgba(255,255,255,0.07)',      // card / button fill
+    border: 'rgba(255,255,255,0.13)',
+    shadow: 'rgba(0,0,0,0.40)',           // 0 8 32 blur, plus a 1px inner top highlight rgba(255,255,255,0.08)
+    text: '#F2F3F5',
     subtext: '#CDD3E1',
-    accent: '#8DBBFF',
-    onAccent: '#0A0F1F',               // text/icons on an accent fill
+    accent: '#6AA8FF',
+    onAccent: '#0A0F1F',                  // text/icons on an accent fill
     accentSelected: 'rgba(90,160,255,0.20)', // selected option card fill
     toggleOn: '#34C759',
     toggleOff: 'rgba(255,255,255,0.24)',
-    segmentTrack: 'rgba(0,0,0,0.32)',
-    segmentActive: 'rgba(255,255,255,0.20)',
-    danger: '#FFC4BD',
+    segmentTrack: 'rgba(0,0,0,0.30)',
+    segmentActive: 'rgba(255,255,255,0.16)',
+    danger: '#FF6B61',
     previewScene: ['#0B1F4D', '#1C4A9C', '#0A1330'], // island preview backdrop, top to bottom
   },
   light: {
-    base: '#E8EEFC',
-    blobs: ['rgba(90,140,255,0.45)', 'rgba(200,130,255,0.40)', 'rgba(60,210,190,0.35)'],
-    glass: 'rgba(255,255,255,0.55)',
-    border: 'rgba(255,255,255,0.85)',
-    shadow: 'rgba(50,70,140,0.14)',
+    base: '#EEF0F3',                      // plain light grey screen background
+    glass: 'rgba(255,255,255,0.65)',
+    border: 'rgba(20,24,42,0.10)',        // dark hairline: a white border disappears on a light base
+    shadow: 'rgba(20,24,42,0.10)',        // 0 8 24 blur, plus a 1px inner top highlight rgba(255,255,255,0.9)
     text: '#14182A',
     subtext: '#3A4257',
-    accent: '#1757C2',
+    accent: '#1B63D6',
     onAccent: '#FFFFFF',
     accentSelected: 'rgba(27,99,214,0.14)',
     toggleOn: '#1B8F42',
     toggleOff: 'rgba(20,24,42,0.26)',
-    segmentTrack: 'rgba(20,24,42,0.08)',
+    segmentTrack: 'rgba(20,24,42,0.07)',
     segmentActive: 'rgba(255,255,255,0.95)',
-    danger: '#8A1B14',
+    danger: '#C9302A',
     previewScene: ['#5B93EA', '#A9CDFF', '#DBE9FF'],
   },
 };
 
-// Glass recipe (both themes): blur radius 24, saturation 1.6, 1px `border`, `shadow` below.
+// Glass recipe (both themes): translucent `glass` fill, blur radius 24, saturation 1.6, 1px `border`, `shadow` below.
+// On a flat base the blur is only visible where content sits behind the glass (scrolling lists, the island preview), so `border`, `shadow` and the inner highlight carry the glass look.
 // With expo-blur, tune `intensity` until it visually matches a 24px blur.
 export const blur = { radius: 24, saturation: 1.6 };
 
@@ -115,7 +114,7 @@ All UI components accept `physicsPreset` prop → `{ damping, stiffness, mass }`
 
 ### 1.5 Accessibility
 - Screen reader labels for all interactive elements (`accessibilityLabel`, `accessibilityHint`).
-- Minimum contrast ratio 4.5:1 for text on blurred backgrounds, 3:1 for icons and controls. The 1.2 tokens were checked against their worst case: glass over the base colour and over the centre of each backdrop blob. Verified pairs: `text`, `subtext` and `danger` on glass and base (4.5:1 or better); `onAccent` on `accent` (6.6:1 or better); `accent` and `toggleOn` on glass (3:1 or better). Re-run this check whenever a token changes.
+- Minimum contrast ratio 4.5:1 for text on glass, 3:1 for icons and controls. The 1.2 tokens were checked on the flat `base` and on `glass` over it. Verified pairs: `text`, `subtext` and `danger` on glass and base (4.5:1 or better); `onAccent` on `accent` (5.5:1 or better); `accent` and `toggleOn` on glass and on `accentSelected` (3:1 or better). Re-run this check whenever a token changes.
 - `accent` is for icons, borders and focus only; use `text` for anything readable. `danger` may be used as text.
 - Haptic feedback on button presses and card expansions (`expo-haptics`).
 - Respect OS Reduced Motion settings: fallback to instant transitions if enabled.
