@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -159,29 +160,35 @@ function MainSettingsView({
         style={[
           styles.computerCard,
           {
-            backgroundColor: colors.glass,
             borderColor: colors.border,
           },
         ]}
       >
-        <View style={styles.computerIconTile}>
-          <Ionicons name="desktop-outline" size={20} color="#2FBF5B" />
-        </View>
-        <View style={styles.computerTextCol}>
-          <Text style={[styles.computerName, { color: colors.text }]}>{computerName}</Text>
-          <View style={styles.connectedRow}>
-            <View
-              style={[
-                styles.connectedDot,
-                { backgroundColor: isConnected ? '#2FBF5B' : '#FF9F0A' },
-              ]}
-            />
-            <Text style={[styles.connectedStatus, { color: colors.subtext }]}>
-              {isConnected ? 'Connected' : 'Disconnected'}
-            </Text>
+        <BlurView
+          intensity={isDark ? 30 : 45}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={[styles.computerCardInner, { backgroundColor: colors.glass }]}>
+          <View style={styles.computerIconTile}>
+            <Ionicons name="desktop-outline" size={20} color="#2FBF5B" />
           </View>
+          <View style={styles.computerTextCol}>
+            <Text style={[styles.computerName, { color: colors.text }]}>{computerName}</Text>
+            <View style={styles.connectedRow}>
+              <View
+                style={[
+                  styles.connectedDot,
+                  { backgroundColor: isConnected ? '#2FBF5B' : '#FF9F0A' },
+                ]}
+              />
+              <Text style={[styles.connectedStatus, { color: colors.subtext }]}>
+                {isConnected ? 'Connected' : 'Disconnected'}
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.subtext} />
         </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.subtext} />
       </TouchableOpacity>
 
       {/* Settings Navigation Menu Card */}
@@ -552,7 +559,7 @@ function MotionSettingsView({ onBack }: { onBack: () => void }) {
   const motionPreset = useSettingsStore((s) => s.motionPreset);
   const setMotionPreset = useSettingsStore((s) => s.setMotionPreset);
   const themeMode = useSettingsStore((s) => s.themeMode);
-  const { colors } = useTheme(themeMode);
+  const { colors, isDark } = useTheme(themeMode);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -604,15 +611,21 @@ function MotionSettingsView({ onBack }: { onBack: () => void }) {
         style={[
           styles.infoCard,
           {
-            backgroundColor: colors.glass,
             borderColor: colors.border,
           },
         ]}
       >
-        <Ionicons name="information-circle-outline" size={20} color={colors.subtext} />
-        <Text style={[styles.infoText, { color: colors.subtext }]}>
-          Reduced motion follows your system setting.
-        </Text>
+        <BlurView
+          intensity={isDark ? 25 : 40}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={[styles.infoCardInner, { backgroundColor: colors.glass }]}>
+          <Ionicons name="information-circle-outline" size={20} color={colors.subtext} />
+          <Text style={[styles.infoText, { color: colors.subtext }]}>
+            Reduced motion follows your system setting.
+          </Text>
+        </View>
       </View>
 
       <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
@@ -729,7 +742,7 @@ function ConnectionSettingsView({ onBack }: { onBack: () => void }) {
   const reconnectAutomatically = useSettingsStore((s) => s.reconnectAutomatically);
   const setReconnectAutomatically = useSettingsStore((s) => s.setReconnectAutomatically);
   const themeMode = useSettingsStore((s) => s.themeMode);
-  const { colors } = useTheme(themeMode);
+  const { colors, isDark } = useTheme(themeMode);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -793,27 +806,34 @@ function ConnectionSettingsView({ onBack }: { onBack: () => void }) {
       <View
         style={[
           styles.reconnectCard,
-          { backgroundColor: colors.glass, borderColor: colors.border },
+          { borderColor: colors.border },
         ]}
       >
-        <View style={styles.dropHeaderRow}>
-          <View style={styles.warningDot} />
-          <Text style={[styles.dropTitle, { color: colors.text }]}>
-            Can’t reach {computerName}
+        <BlurView
+          intensity={isDark ? 30 : 45}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={[styles.reconnectCardInner, { backgroundColor: colors.glass }]}>
+          <View style={styles.dropHeaderRow}>
+            <View style={styles.warningDot} />
+            <Text style={[styles.dropTitle, { color: colors.text }]}>
+              Can’t reach {computerName}
+            </Text>
+          </View>
+          <Text style={[styles.dropSubtitle, { color: colors.subtext }]}>
+            Changes you make now will sync when you’re back in range.
           </Text>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setIsConnected(true)}
+            style={[styles.primaryReconnectBtn, { backgroundColor: colors.accent }]}
+          >
+            <Text style={[styles.primaryReconnectText, { color: colors.onAccent }]}>
+              Reconnect
+            </Text>
+          </TouchableOpacity>
         </View>
-        <Text style={[styles.dropSubtitle, { color: colors.subtext }]}>
-          Changes you make now will sync when you’re back in range.
-        </Text>
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => setIsConnected(true)}
-          style={[styles.primaryReconnectBtn, { backgroundColor: colors.accent }]}
-        >
-          <Text style={[styles.primaryReconnectText, { color: colors.onAccent }]}>
-            Reconnect
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <Text style={[styles.footerText, { color: colors.subtext }]}>Test build</Text>
@@ -826,7 +846,7 @@ function ConnectionSettingsView({ onBack }: { onBack: () => void }) {
 // -------------------------------------------------------------
 function AboutSettingsView({ onBack }: { onBack: () => void }) {
   const themeMode = useSettingsStore((s) => s.themeMode);
-  const { colors } = useTheme(themeMode);
+  const { colors, isDark } = useTheme(themeMode);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -837,20 +857,27 @@ function AboutSettingsView({ onBack }: { onBack: () => void }) {
       <View
         style={[
           styles.aboutAppCard,
-          { backgroundColor: colors.glass, borderColor: colors.border },
+          { borderColor: colors.border },
         ]}
       >
-        <View style={styles.appIconN}>
-          <Text style={styles.appIconNText}>N</Text>
-        </View>
-        <View style={styles.appInfoTextCol}>
-          <Text style={[styles.appTitle, { color: colors.text }]}>Nook</Text>
-          <Text style={[styles.appSubtitle, { color: colors.subtext }]}>
-            Version 0.1.4 · Test build
-          </Text>
-          <Text style={[styles.appSubtitle, { color: colors.subtext }]}>
-            Powered by Nook Flow
-          </Text>
+        <BlurView
+          intensity={isDark ? 30 : 45}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={[styles.aboutAppCardInner, { backgroundColor: colors.glass }]}>
+          <View style={styles.appIconN}>
+            <Text style={styles.appIconNText}>N</Text>
+          </View>
+          <View style={styles.appInfoTextCol}>
+            <Text style={[styles.appTitle, { color: colors.text }]}>Nook</Text>
+            <Text style={[styles.appSubtitle, { color: colors.subtext }]}>
+              Version 0.1.4 · Test build
+            </Text>
+            <Text style={[styles.appSubtitle, { color: colors.subtext }]}>
+              Powered by Nook Flow
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -859,19 +886,26 @@ function AboutSettingsView({ onBack }: { onBack: () => void }) {
       <View
         style={[
           styles.testVersionCard,
-          { backgroundColor: colors.glass, borderColor: colors.border },
+          { borderColor: colors.border },
         ]}
       >
-        <View style={styles.testVersionTextCol}>
-          <Text style={[styles.testVersionTitle, { color: colors.text }]}>
-            You’re using a test build
-          </Text>
-          <Text style={[styles.testVersionSub, { color: colors.subtext }]}>
-            Thanks for trying Nook early. Licensing and updates come with the release.
-          </Text>
-        </View>
-        <View style={[styles.versionBadge, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
-          <Text style={[styles.versionBadgeText, { color: colors.text }]}>0.1.4</Text>
+        <BlurView
+          intensity={isDark ? 25 : 40}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={[styles.testVersionCardInner, { backgroundColor: colors.glass }]}>
+          <View style={styles.testVersionTextCol}>
+            <Text style={[styles.testVersionTitle, { color: colors.text }]}>
+              You’re using a test build
+            </Text>
+            <Text style={[styles.testVersionSub, { color: colors.subtext }]}>
+              Thanks for trying Nook early. Licensing and updates come with the release.
+            </Text>
+          </View>
+          <View style={[styles.versionBadge, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
+            <Text style={[styles.versionBadgeText, { color: colors.text }]}>0.1.4</Text>
+          </View>
         </View>
       </View>
 
@@ -940,13 +974,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   computerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
     borderRadius: 24,
     borderWidth: 1,
     marginHorizontal: 16,
     marginBottom: 16,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  computerCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
     gap: 14,
   },
   computerIconTile: {
@@ -1062,13 +1104,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   infoCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
     borderRadius: 20,
     borderWidth: 1,
     marginHorizontal: 16,
     marginTop: 6,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  infoCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
     gap: 12,
   },
   infoText: {
@@ -1119,10 +1169,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   reconnectCard: {
-    padding: 18,
     borderRadius: 24,
     borderWidth: 1,
     marginHorizontal: 16,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  reconnectCardInner: {
+    padding: 18,
     gap: 10,
   },
   dropHeaderRow: {
@@ -1156,12 +1214,20 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   aboutAppCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
     borderRadius: 24,
     borderWidth: 1,
     marginHorizontal: 16,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  aboutAppCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
     gap: 14,
   },
   appIconN: {
@@ -1191,12 +1257,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   testVersionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
     borderRadius: 20,
     borderWidth: 1,
     marginHorizontal: 16,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  testVersionCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
     gap: 12,
   },
   testVersionTextCol: {

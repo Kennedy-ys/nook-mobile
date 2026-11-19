@@ -25,7 +25,8 @@
 
 ## 📁 Core Files Created
 - `src/theme/colors.ts` — Theme tokens (Dark & Light), live activity tile colors, blur & island tokens, and `useTheme()` hook
-- `src/components/settings/SettingsBackground.tsx` — Glass backdrop with organic ambient blur blobs
+- `src/components/settings/BlurredGlowOrb.tsx` — Concentric Gaussian radial falloff orbs for island preview glow effects
+- `src/components/settings/SettingsBackground.tsx` — Glass backdrop with linear gradients for subtle depth
 - `src/components/settings/SettingsHeader.tsx` — Navigation header with back button and `● Connected` status chip
 - `src/components/settings/IslandPreviewCard.tsx` — Top blue scene vignette card with contextual preview modes (Notch, Download, Tinted split, Motion with Replay button, Sound HUD, Weather)
 - `src/components/settings/RadioOptionCard.tsx` — Radio cards with mini illustrations for visibility, background, and motion
